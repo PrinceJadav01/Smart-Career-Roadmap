@@ -65,10 +65,10 @@ export async function login(email, password) {
   return data;
 }
 
-export async function register(name, email, password) {
+export async function register({ name, email, password, confirmPassword, phoneNumber, educationLevel, fieldOfStudy }) {
   const data = await request('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ name, email, password, confirmPassword, phoneNumber, educationLevel, fieldOfStudy }),
   });
   setAuth(data.token, data.user.id);
   return data;
@@ -153,3 +153,154 @@ export async function unlockAchievement(userId, achievementKey) {
     body: JSON.stringify({ achievementKey }),
   });
 }
+
+// ── Admin Endpoints ───────────────────────────────────────
+export async function createSkill(skillData) {
+  return request('/skills', {
+    method: 'POST',
+    body: JSON.stringify(skillData),
+  });
+}
+
+export async function deleteSkill(skillId) {
+  return request(`/skills/${skillId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function createResource(resourceData) {
+  return request('/resources', {
+    method: 'POST',
+    body: JSON.stringify(resourceData),
+  });
+}
+
+export async function deleteResource(resourceId) {
+  return request(`/resources/${resourceId}`, {
+    method: 'DELETE',
+  });
+}
+
+// ── ML Endpoints ──────────────────────────────────────────
+export async function getAiGeneratedPath(targetRole, currentSkills) {
+  return request('/ml/predict-path', {
+    method: 'POST',
+    body: JSON.stringify({
+      targetRole,
+      skills: currentSkills
+    }),
+  });
+}
+
+export async function suggestRoles(currentSkills) {
+  return request('/ml/suggest-roles', {
+    method: 'POST',
+    body: JSON.stringify({
+      skills: currentSkills
+    }),
+  });
+}
+
+// ── Admin CRUD Endpoints ────────────────────────────────────
+export async function getAdminUsers() {
+  return request('/admin/users');
+}
+
+export async function deleteAdminUser(id) {
+  return request(`/admin/users/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function getAdminQuests() {
+  return request('/admin/quests');
+}
+
+export async function createAdminQuest(quest) {
+  return request('/admin/quests', {
+    method: 'POST',
+    body: JSON.stringify(quest),
+  });
+}
+
+export async function deleteAdminQuest(id) {
+  return request(`/admin/quests/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function addQuestQuestion(questId, question) {
+  return request(`/admin/quests/${questId}/questions`, {
+    method: 'POST',
+    body: JSON.stringify(question),
+  });
+}
+
+export async function deleteQuestQuestion(id) {
+  return request(`/admin/questions/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function createAdminReward(reward) {
+  return request('/admin/rewards', {
+    method: 'POST',
+    body: JSON.stringify(reward),
+  });
+}
+
+export async function deleteAdminReward(id) {
+  return request(`/admin/rewards/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function getAdminHealth() {
+  return request('/admin/health');
+}
+
+export async function getAdminAuditLogs() {
+  return request('/admin/audit-logs');
+}
+
+export async function updateUserTokens(id, amount, reason = 'Gifted by Admin') {
+  return request(`/admin/users/${id}/tokens`, {
+    method: 'POST',
+    body: JSON.stringify({ amount, reason }),
+  });
+}
+
+export async function toggleUserAdmin(id) {
+  return request(`/admin/users/${id}/toggle-admin`, {
+    method: 'POST',
+  });
+}
+
+
+// ── Weekly Quest Endpoints ──────────────────────────────────
+export async function getActiveWeeklyQuest() {
+  return request('/weeklyquests/active');
+}
+
+export async function submitWeeklyQuest(submission) {
+  return request('/weeklyquests/submit', {
+    method: 'POST',
+    body: JSON.stringify(submission),
+  });
+}
+
+export async function getQuestLeaderboard(questId) {
+  return request(`/weeklyquests/leaderboard/${questId}`);
+}
+
+// ── Token Shop Endpoints ────────────────────────────────────
+export async function getRewardsCatalog() {
+  return request('/rewards');
+}
+
+export async function redeemReward(rewardId) {
+  return request(`/rewards/redeem/${rewardId}`, {
+    method: 'POST',
+  });
+}
+

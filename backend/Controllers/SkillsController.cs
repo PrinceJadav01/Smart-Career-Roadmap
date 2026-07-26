@@ -113,7 +113,11 @@ public class SkillsController : ControllerBase
                 Xp = updatedUser.Xp,
                 MaxXp = CalculateMaxXp(updatedUser.Level),
                 Streak = updatedUser.Streak,
-                BadgesEarned = updatedUser.UserAchievements.Count
+                BadgesEarned = updatedUser.UserAchievements.Count,
+                Bio = updatedUser.Bio,
+                GithubUrl = updatedUser.GithubUrl,
+                LinkedinUrl = updatedUser.LinkedinUrl,
+                IsAdmin = updatedUser.IsAdmin
             }
         });
     }
@@ -124,5 +128,45 @@ public class SkillsController : ControllerBase
         for (int i = 1; i < level; i++)
             maxXp = (int)Math.Round(maxXp * 1.25);
         return maxXp;
+    }
+
+    /// <summary>POST /api/skills — [Admin] Create a new skill</summary>
+    [HttpPost]
+    public async Task<IActionResult> CreateSkill([FromBody] SkillCreateRequest req)
+    {
+        var existingSkill = await _db.Skills.FirstOrDefaultAsync(s => s.Name.ToLower() == req.Name.ToLower());
+        if (existingSkill != null)
+            return BadRequest(new { message = "Skill already exists." });
+
+        var skill = new Models.Skill
+        {
+            Id = Guid.NewGuid(),
+            Name = req.Name,
+            Category = req.Category
+        };
+
+        _db.Skills.Add(skill);
+        await _db.SaveChangesAsync();
+
+        return Ok(new SkillDto
+        {
+            Id = skill.Id,
+            Name = skill.Name,
+            Category = skill.Category,
+            Level = 0
+        });
+    }
+
+    /// <summary>DELETE /api/skills/{id} — [Admin] Delete a skill</summary>
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteSkill(Guid id)
+    {
+        var skill = await _db.Skills.FindAsync(id);
+        if (skill == null)
+            return NotFound(new { message = "Skill not found." });
+
+        _db.Skills.Remove(skill);
+        await _db.SaveChangesAsync();
+        return Ok(new { message = "Skill deleted successfully." });
     }
 }

@@ -1,9 +1,8 @@
 import React from 'react';
-import { Target, TrendingUp, DollarSign, Award, Star } from 'lucide-react';
+import { Target, TrendingUp, DollarSign, Award, Star, CheckCircle, Sparkles } from 'lucide-react';
 
 const Careers = ({ careerRoles, selectedRole, userSkills, selectTargetRole }) => {
   
-  // Calculate match score for a specific role
   const getMatchScore = (role) => {
     let totalWeight = 0;
     let earnedWeight = 0;
@@ -20,30 +19,29 @@ const Careers = ({ careerRoles, selectedRole, userSkills, selectTargetRole }) =>
     return totalWeight > 0 ? Math.round((earnedWeight / totalWeight) * 100) : 0;
   };
 
-  const getDemandColor = (demand) => {
+  const getDemandBadge = (demand) => {
     switch (demand) {
-      case 'Critical': return 'text-red-400 border-red-500 bg-red-500/10';
-      case 'High Demand': return 'text-amber-400 border-amber-500 bg-amber-500/10';
-      case 'Growing': return 'text-cyan-400 border-cyan-500 bg-cyan-500/10';
-      default: return 'text-slate-400 border-slate-700 bg-slate-800/10';
+      case 'Critical': return 'badge-danger';
+      case 'High Demand': return 'badge-warn';
+      case 'Growing': return 'badge-accent';
+      default: return 'badge-neutral';
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Intro Panel */}
-      <div className="glass-panel p-6 rounded-2xl bg-gradient-to-r from-purple-950/20 via-gold-dim to-transparent">
-        <h1 className="text-xl md:text-2xl font-bold tracking-wide text-gold-light font-display">
-          CAREER QUEST CATALOG
+      <div className="surface" style={{ padding: '1.5rem', background: 'linear-gradient(135deg, #0F1117 0%, #161822 100%)' }}>
+        <h1 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', fontWeight: 700, color: '#F1F2F4', letterSpacing: '-0.02em' }}>
+          Career Pathways & Target Roles
         </h1>
-        <p className="text-sm text-slate-300 mt-2 leading-relaxed font-sans">
-          Select your target career quest. Each quest outlines the specific skills, industry average salary, 
-          and demand level required in the professional guild. Setting a target generates a custom learning roadmap.
+        <p style={{ fontSize: '0.875rem', color: '#8A8FA8', marginTop: '0.4rem', lineHeight: 1.6, maxWidth: '48rem' }}>
+          Select your primary target career path. Choosing a role automatically tailors your skill recommendations, priority roadmap, and progress metrics.
         </p>
       </div>
 
       {/* Grid of Career Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.25rem' }}>
         {careerRoles.map(role => {
           const matchScore = getMatchScore(role);
           const isSelected = selectedRole === role.name;
@@ -51,57 +49,70 @@ const Careers = ({ careerRoles, selectedRole, userSkills, selectTargetRole }) =>
           return (
             <div 
               key={role.name}
-              className={`glass-panel p-6 rounded-2xl border transition-all duration-300 relative flex flex-col justify-between ${
-                isSelected 
-                  ? 'border-gold bg-gradient-to-b from-purple-950/10 to-gold/5 shadow-[0_0_20px_rgba(255,184,0,0.15)]' 
-                  : 'border-gold-light/10 hover:border-gold/30'
-              }`}
+              className={`surface ${isSelected ? 'surface-accent' : 'surface-hover'}`}
+              style={{
+                padding: '1.5rem',
+                display: 'flex',
+                flexDirection: 'column',
+                justify: 'space-between',
+                position: 'relative',
+                background: isSelected ? '#161822' : '#0F1117'
+              }}
             >
-              {isSelected && (
-                <span className="absolute top-4 right-4 bg-gold text-bg-primary px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase font-display shadow-lg animate-pulse">
-                  ACTIVE QUEST
-                </span>
-              )}
-
-              {/* Title & Stats */}
               <div>
-                <h3 className="text-base font-bold text-slate-100 font-display pr-24">
-                  {role.name}
-                </h3>
+                {/* Title & Badge */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.875rem' }}>
+                  <h3 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.125rem', fontWeight: 600, color: '#F1F2F4', margin: 0 }}>
+                    {role.name}
+                  </h3>
+                  {isSelected && (
+                    <span className="badge badge-accent" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <CheckCircle style={{ width: 11, height: 11 }} /> Target
+                    </span>
+                  )}
+                </div>
                 
-                <div className="flex flex-wrap items-center gap-3 mt-3">
-                  <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 border rounded-full ${getDemandColor(role.demand)}`}>
-                    ⚡ {role.demand}
+                {/* Demand & Salary */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                  <span className={`badge ${getDemandBadge(role.demand)}`}>
+                    {role.demand}
                   </span>
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-slate-300 bg-slate-900/50 border border-slate-800/80 px-2 py-0.5 rounded-full flex items-center gap-1 font-mono">
-                    <DollarSign className="w-3 h-3 text-gold" /> {role.salary}
+                  <span className="badge badge-neutral" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                    {role.salary}
                   </span>
                 </div>
 
-                {/* Match Rating Progress */}
-                <div className="mt-5 space-y-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-slate-400 font-sans">Role Compatibility Matrix:</span>
-                    <span className="font-bold text-gold font-display">{matchScore}% Match</span>
+                {/* Compatibility Progress */}
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', marginBottom: '0.35rem' }}>
+                    <span style={{ color: '#8A8FA8' }}>Role Compatibility</span>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 600, color: matchScore > 70 ? '#00C896' : matchScore > 40 ? '#60A5FA' : '#8A8FA8' }}>
+                      {matchScore}%
+                    </span>
                   </div>
-                  <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800/40">
-                    <div 
-                      className="h-full bg-gradient-to-r from-purple-600 to-gold rounded-full transition-all duration-1000"
-                      style={{ width: `${matchScore}%` }}
-                    />
+                  <div className="progress-track">
+                    <div className="progress-fill" style={{ width: `${matchScore}%`, background: matchScore > 70 ? '#00C896' : matchScore > 40 ? '#60A5FA' : '#8A8FA8' }} />
                   </div>
                 </div>
 
-                {/* Key Prerequisites */}
-                <div className="mt-5">
-                  <span className="text-xs text-slate-400 font-sans block mb-2">Prerequisites:</span>
-                  <div className="flex flex-wrap gap-1.5">
+                {/* Requirements */}
+                <div>
+                  <span style={{ fontSize: '0.75rem', color: '#4B5068', display: 'block', marginBottom: '0.5rem' }}>Required Competencies:</span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
                     {role.requirements.map(req => (
                       <span 
                         key={req.skill}
-                        className="text-[10px] bg-slate-950/60 border border-slate-800/80 rounded px-2.5 py-1 text-slate-300 font-sans"
+                        style={{
+                          fontSize: '0.7rem',
+                          background: '#161822',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          borderRadius: 6,
+                          padding: '0.25rem 0.5rem',
+                          color: '#F1F2F4',
+                          fontFamily: 'Inter, sans-serif'
+                        }}
                       >
-                        {req.skill} <span className="text-gold font-mono text-[9px]">★{req.importance}</span>
+                        {req.skill} <span style={{ color: '#00C896', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem' }}>★{req.importance}</span>
                       </span>
                     ))}
                   </div>
@@ -109,17 +120,21 @@ const Careers = ({ careerRoles, selectedRole, userSkills, selectTargetRole }) =>
               </div>
 
               {/* Select Button */}
-              <div className="mt-6 border-t border-slate-800/40 pt-4">
+              <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1rem' }}>
                 <button
                   disabled={isSelected}
                   onClick={() => selectTargetRole(role.name)}
-                  className={`w-full py-2.5 rounded-xl font-bold font-display text-xs tracking-wider transition-all ${
-                    isSelected 
-                      ? 'bg-transparent border border-gold/40 text-gold cursor-default'
-                      : 'bg-gold hover:bg-gold-light text-bg-primary shadow-lg hover:shadow-[0_0_15px_rgba(255,184,0,0.3)]'
-                  }`}
+                  className={isSelected ? 'btn-ghost' : 'btn-primary'}
+                  style={{
+                    width: '100%',
+                    justifyContent: 'center',
+                    fontSize: '0.8125rem',
+                    padding: '0.55rem',
+                    opacity: isSelected ? 0.7 : 1,
+                    cursor: isSelected ? 'default' : 'pointer'
+                  }}
                 >
-                  {isSelected ? 'TARGET IDENTIFIED' : 'ACCEPT CAREER QUEST'}
+                  {isSelected ? 'Current Target Role' : 'Set as Target Role'}
                 </button>
               </div>
 

@@ -17,6 +17,12 @@ public class AppDbContext : DbContext
     public DbSet<UserAchievement> UserAchievements => Set<UserAchievement>();
     public DbSet<UserResource> UserResources => Set<UserResource>();
     public DbSet<CompletedQuest> CompletedQuests => Set<CompletedQuest>();
+    public DbSet<WeeklyQuest> WeeklyQuests => Set<WeeklyQuest>();
+    public DbSet<QuestQuestion> QuestQuestions => Set<QuestQuestion>();
+    public DbSet<QuestSubmission> QuestSubmissions => Set<QuestSubmission>();
+    public DbSet<RedeemableReward> RedeemableRewards => Set<RedeemableReward>();
+    public DbSet<UserRedemption> UserRedemptions => Set<UserRedemption>();
+    public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -125,6 +131,45 @@ public class AppDbContext : DbContext
             entity.HasOne(cq => cq.CareerRole)
                   .WithMany()
                   .HasForeignKey(cq => cq.RoleId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ── QuestQuestions ─────────────────────────────────────
+        modelBuilder.Entity<QuestQuestion>(entity =>
+        {
+            entity.HasOne(qq => qq.WeeklyQuest)
+                  .WithMany(wq => wq.Questions)
+                  .HasForeignKey(qq => qq.WeeklyQuestId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ── QuestSubmissions ───────────────────────────────────
+        modelBuilder.Entity<QuestSubmission>(entity =>
+        {
+            entity.HasIndex(e => new { e.UserId, e.WeeklyQuestId }).IsUnique();
+
+            entity.HasOne(qs => qs.User)
+                  .WithMany()
+                  .HasForeignKey(qs => qs.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(qs => qs.WeeklyQuest)
+                  .WithMany(wq => wq.Submissions)
+                  .HasForeignKey(qs => qs.WeeklyQuestId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ── UserRedemptions ────────────────────────────────────
+        modelBuilder.Entity<UserRedemption>(entity =>
+        {
+            entity.HasOne(ur => ur.User)
+                  .WithMany()
+                  .HasForeignKey(ur => ur.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(ur => ur.Reward)
+                  .WithMany()
+                  .HasForeignKey(ur => ur.RewardId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
     }

@@ -1,0 +1,20 @@
+======================================================
+  QUICK COMMANDS TO RUN THE PROJECT (FROM CMD)
+======================================================
+
+For detailed beginner setup, see: HOW_TO_RUN_PROJECT.txt
+
+1. ML SERVICE (Terminal 1):
+   cd ml-service
+   venv\Scripts\activate
+   uvicorn main:app --reload --port 8000
+
+2. BACKEND (Terminal 2):
+   cd backend
+   dotnet run
+
+3. FRONTEND (Terminal 3):
+   cd frontend
+   npm run dev
+
+App URL: http://localhost:5173

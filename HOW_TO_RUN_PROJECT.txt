@@ -1,0 +1,115 @@
+================================================================================
+          SMART CAREER ROADMAP (SKILLSATHI) - COMPLETE SETUP & RUN GUIDE
+================================================================================
+
+This guide explains step-by-step how to download, set up, and run the Smart 
+Career Roadmap project on any system using standard Command Prompt (cmd).
+
+
+--------------------------------------------------------------------------------
+1. PREREQUISITES (INSTALL THESE FIRST)
+--------------------------------------------------------------------------------
+Before starting, ensure you have the following installed on your machine:
+
+1. Node.js (v18 or higher)
+   - Download: https://nodejs.org/
+   - Verify in cmd: node -v && npm -v
+
+2. .NET 8.0 SDK (or .NET 7.0)
+   - Download: https://dotnet.microsoft.com/download
+   - Verify in cmd: dotnet --version
+
+3. Python (v3.9 or higher)
+   - Download: https://www.python.org/downloads/
+   - Check "Add Python to PATH" during installation.
+   - Verify in cmd: python --version
+
+4. PostgreSQL Database
+   - Download: https://www.postgresql.org/download/
+   - Remember your postgres password set during installation (default password in appsettings is 3327).
+
+
+--------------------------------------------------------------------------------
+2. DATABASE SETUP
+--------------------------------------------------------------------------------
+1. Open pgAdmin or SQL Shell (psql) / Command Prompt.
+2. Create a database named: smart_career_roadmap
+   Command in psql:
+     CREATE DATABASE smart_career_roadmap;
+3. Update connection string in `backend/appsettings.json` if your PostgreSQL 
+   username/password differs:
+     "ConnectionStrings": {
+       "DefaultConnection": "Host=localhost;Port=5432;Database=smart_career_roadmap;Username=postgres;Password=YOUR_PASSWORD"
+     }
+4. Import database schema:
+   - Run `database/init.sql` script into the `smart_career_roadmap` database using pgAdmin Query Tool or psql:
+     psql -U postgres -d smart_career_roadmap -f database/init.sql
+
+
+--------------------------------------------------------------------------------
+3. STEP-BY-STEP RUNNING INSTRUCTIONS (OPEN 3 COMMAND PROMPTS)
+--------------------------------------------------------------------------------
+
+--------------------------------------------------
+TERMINAL 1: ML SERVICE (Python FastAPI - Port 8000)
+--------------------------------------------------
+1. Open Command Prompt (cmd) and navigate to the project folder:
+   cd path\to\SCR\ml-service
+
+2. Create a virtual environment (if not already present):
+   python -m venv venv
+
+3. Activate the virtual environment:
+   - On Windows cmd:
+     venv\Scripts\activate
+   - On PowerShell / Bash:
+     venv\Scripts\Activate.ps1   OR   source venv/bin/activate
+
+4. Install dependencies:
+   pip install -r requirements.txt
+
+5. Start the ML service:
+   uvicorn main:app --reload --port 8000
+
+--> ML Service will start at: http://localhost:8000
+
+
+--------------------------------------------------
+TERMINAL 2: BACKEND (.NET Web API - Port 5000 / 5001)
+--------------------------------------------------
+1. Open a SECOND Command Prompt window and navigate to backend folder:
+   cd path\to\SCR\backend
+
+2. Restore packages and build:
+   dotnet restore
+
+3. Run the backend server:
+   dotnet run
+
+--> Backend API will start running (listening for API requests from Frontend).
+
+
+--------------------------------------------------
+TERMINAL 3: FRONTEND (React Vite - Port 5173)
+--------------------------------------------------
+1. Open a THIRD Command Prompt window and navigate to frontend folder:
+   cd path\to\SCR\frontend
+
+2. Install npm packages (first time only):
+   npm install
+
+3. Start the dev server:
+   npm run dev
+
+--> Frontend will open / run at: http://localhost:5173
+
+
+--------------------------------------------------------------------------------
+4. ACCESSING THE APPLICATION
+--------------------------------------------------------------------------------
+- Open your browser and navigate to: http://localhost:5173
+- You can Register a new user account or Sign In with existing credentials.
+- New users will automatically go through the 3-step onboarding flow.
+
+
+================================================================================

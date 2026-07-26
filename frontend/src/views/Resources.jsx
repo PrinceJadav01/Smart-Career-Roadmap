@@ -5,7 +5,6 @@ const Resources = ({ resourcesCatalog }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
 
-  // Convert the catalog dictionary into an array of resources, adding their skill context
   const allResources = [];
   Object.keys(resourcesCatalog).forEach(skillName => {
     resourcesCatalog[skillName].forEach(resource => {
@@ -16,7 +15,6 @@ const Resources = ({ resourcesCatalog }) => {
     });
   });
 
-  // Filter logic
   const filteredResources = allResources.filter(res => {
     const matchesSearch = res.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           res.skill.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -27,59 +25,53 @@ const Resources = ({ resourcesCatalog }) => {
 
   const getIcon = (type) => {
     switch (type) {
-      case 'video': return <PlayCircle className="w-5 h-5 text-red-400" />;
-      case 'course': return <GraduationCap className="w-5 h-5 text-cyan-400" />;
-      default: return <FileText className="w-5 h-5 text-purple-400" />;
+      case 'video': return <PlayCircle style={{ width: 18, height: 18, color: '#F87171' }} />;
+      case 'course': return <GraduationCap style={{ width: 18, height: 18, color: '#60A5FA' }} />;
+      default: return <FileText style={{ width: 18, height: 18, color: '#00C896' }} />;
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Intro Panel */}
-      <div className="glass-panel p-6 rounded-2xl bg-gradient-to-r from-cyan-950/20 via-gold-dim to-transparent">
-        <h1 className="text-xl md:text-2xl font-bold tracking-wide text-cyan-400 font-display">
-          GUILD LOOT DIRECTORY
+      <div className="surface" style={{ padding: '1.5rem', background: 'linear-gradient(135deg, #0F1117 0%, #161822 100%)' }}>
+        <h1 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', fontWeight: 700, color: '#F1F2F4', letterSpacing: '-0.02em' }}>
+          Learning Resource Library
         </h1>
-        <p className="text-sm text-slate-300 mt-2 leading-relaxed font-sans">
-          Browse and search the entire repository of learning resources. These guides and online courses are hand-picked 
-          by top professional guild masters to accelerate your skill leveling.
+        <p style={{ fontSize: '0.875rem', color: '#8A8FA8', marginTop: '0.4rem', lineHeight: 1.6, maxWidth: '48rem' }}>
+          Search and filter hand-curated tutorials, courses, and documentation across all technical competencies to support your growth.
         </p>
       </div>
 
-      {/* Search & Filter Controls */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+      {/* Controls */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.875rem', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 260 }}>
+          <Search style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', width: 15, height: 15, color: '#4B5068', pointerEvents: 'none' }} />
           <input
             type="text"
-            placeholder="Search resources by skill, title, or platform..."
+            placeholder="Search by skill, title, or platform..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950/40 border border-slate-800 focus:border-gold outline-none transition-all text-sm font-sans"
+            className="input-field"
+            style={{ paddingLeft: '2.5rem' }}
           />
         </div>
 
-        {/* Type Filter */}
-        <div className="flex gap-1 bg-slate-950/40 border border-slate-800 rounded-xl p-1 shrink-0">
+        <div className="tab-nav">
           {['all', 'video', 'course', 'article'].map((type) => (
             <button
               key={type}
               onClick={() => setTypeFilter(type)}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold font-display uppercase tracking-wide transition-all ${
-                typeFilter === type
-                  ? 'bg-gold text-bg-primary shadow-[0_0_8px_rgba(255,184,0,0.3)]'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
+              className={`tab-item${typeFilter === type ? ' active' : ''}`}
             >
-              {type === 'all' ? 'All' : type + 's'}
+              {type === 'all' ? 'All Types' : type.charAt(0).toUpperCase() + type.slice(1) + 's'}
             </button>
           ))}
         </div>
       </div>
 
       {/* Grid listing */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
         {filteredResources.length > 0 ? (
           filteredResources.map((res, index) => (
             <a
@@ -87,33 +79,32 @@ const Resources = ({ resourcesCatalog }) => {
               href={res.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="glass-panel p-4 rounded-xl flex items-center justify-between gap-4 transition-all duration-200 hover:-translate-y-0.5"
+              className="surface surface-hover"
+              style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', textDecoration: 'none' }}
             >
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center justify-center shrink-0">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', minWidth: 0 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: '#161822', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   {getIcon(res.type)}
                 </div>
-                <div className="min-w-0">
-                  <span className="text-[9px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded font-display uppercase tracking-wide inline-block mb-1">
+                <div style={{ minWidth: 0 }}>
+                  <span className="badge badge-accent" style={{ fontSize: '0.65rem', marginBottom: '0.2rem' }}>
                     {res.skill}
                   </span>
-                  <h3 className="text-xs font-bold text-slate-100 font-display truncate">
+                  <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: '0.875rem', color: '#F1F2F4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {res.title}
-                  </h3>
-                  <span className="text-[10px] text-slate-400 block font-sans mt-0.5">
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#4B5068', marginTop: '0.15rem' }}>
                     {res.platform} • {res.time} • {res.cost}
-                  </span>
+                  </div>
                 </div>
               </div>
               
-              <div className="w-8 h-8 rounded-lg bg-slate-950/20 hover:bg-gold-dim border border-slate-800/80 hover:border-gold/40 flex items-center justify-center shrink-0 text-slate-500 hover:text-gold transition-all">
-                <ExternalLink className="w-4 h-4" />
-              </div>
+              <ExternalLink style={{ width: 14, height: 14, color: '#4B5068', flexShrink: 0 }} />
             </a>
           ))
         ) : (
-          <div className="col-span-full py-12 text-center text-slate-500 font-sans text-sm">
-            No loot resources match your filter coordinates.
+          <div style={{ gridColumn: '1 / -1', padding: '3rem 0', textAlign: 'center', color: '#4B5068', fontSize: '0.875rem' }}>
+            No learning resources match your search criteria.
           </div>
         )}
       </div>

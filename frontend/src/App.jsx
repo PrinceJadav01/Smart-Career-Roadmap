@@ -7,10 +7,17 @@ import Roadmap from './views/Roadmap';
 import Resources from './views/Resources';
 import Achievements from './views/Achievements';
 import Profile from './views/Profile';
+import Admin from './views/Admin';
+import Onboarding from './views/Onboarding';
+import WeeklyQuest from './views/WeeklyQuest';
+import TokenShop from './views/TokenShop';
+import Login from './views/Login';
+import SignUp from './views/SignUp';
+import AdminLayout from './views/AdminLayout';
 import { 
   Shield, Target, Award, BookOpen, User, 
-  Menu, X, Bell, LogIn, Lock, Mail, Edit3, Map,
-  Sun, Moon, Loader2
+  Menu, X, Bell, Edit3, Map,
+  Sun, Moon
 } from 'lucide-react';
 import * as api from './services/api';
 
@@ -32,7 +39,24 @@ const initialSkills = [
   { name: 'Python Core', level: 2, category: 'Python & ML' },
   { name: 'FastAPI', level: 0, category: 'Python & ML' },
   { name: 'scikit-learn', level: 0, category: 'Python & ML' },
-  { name: 'Pandas & NumPy', level: 1, category: 'Python & ML' }
+  { name: 'Pandas & NumPy', level: 1, category: 'Python & ML' },
+  { name: 'Docker', level: 0, category: 'Backend' },
+  { name: 'AWS', level: 0, category: 'Backend' },
+  { name: 'Git', level: 2, category: 'Frontend' },
+  { name: 'Kubernetes', level: 0, category: 'Backend' },
+  { name: 'Cybersecurity Basics', level: 0, category: 'Backend' },
+  { name: 'Figma', level: 0, category: 'Frontend' },
+  { name: 'UX Research', level: 0, category: 'Frontend' },
+  { name: 'Agile & Scrum', level: 0, category: 'Python & ML' },
+  { name: 'Product Management', level: 0, category: 'Python & ML' },
+  { name: 'Technical Writing', level: 0, category: 'Python & ML' },
+  { name: 'Business Analysis', level: 0, category: 'Python & ML' },
+  { name: 'Blockchain & Solidity', level: 0, category: 'Backend' },
+  { name: 'Data Visualization', level: 0, category: 'Python & ML' },
+  { name: 'QA & Testing', level: 0, category: 'Backend' },
+  { name: 'SEO & Marketing', level: 0, category: 'Python & ML' },
+  { name: 'IT Support & Networking', level: 0, category: 'Backend' },
+  { name: 'Mobile Dev (iOS/Android)', level: 0, category: 'Frontend' }
 ];
 
 const careerRoles = [
@@ -61,7 +85,7 @@ const careerRoles = [
     ]
   },
   {
-    name: 'Full-Stack Developer',
+    name: 'Full Stack Developer',
     demand: 'Critical',
     salary: '₹10-25 LPA',
     requirements: [
@@ -84,6 +108,169 @@ const careerRoles = [
       { skill: 'scikit-learn', importance: 5 },
       { skill: 'Pandas & NumPy', importance: 5 },
       { skill: 'REST APIs', importance: 3 }
+    ]
+  },
+  {
+    name: 'Data Scientist',
+    demand: 'High Demand',
+    salary: '₹15-30 LPA',
+    requirements: [
+      { skill: 'Python Core', importance: 5 },
+      { skill: 'PostgreSQL', importance: 4 },
+      { skill: 'Data Visualization', importance: 4 },
+      { skill: 'AWS', importance: 2 }
+    ]
+  },
+  {
+    name: 'DevOps Engineer',
+    demand: 'Critical',
+    salary: '₹15-28 LPA',
+    requirements: [
+      { skill: 'Docker', importance: 5 },
+      { skill: 'AWS', importance: 4 },
+      { skill: 'Git', importance: 4 },
+      { skill: 'Python Core', importance: 3 },
+      { skill: 'Kubernetes', importance: 4 }
+    ]
+  },
+  {
+    name: 'Cloud Architect',
+    demand: 'Critical',
+    salary: '₹18-35 LPA',
+    requirements: [
+      { skill: 'AWS', importance: 5 },
+      { skill: 'Docker', importance: 4 },
+      { skill: 'Kubernetes', importance: 4 },
+      { skill: 'Python Core', importance: 3 },
+      { skill: 'Git', importance: 3 }
+    ]
+  },
+  {
+    name: 'Cybersecurity Analyst',
+    demand: 'High Demand',
+    salary: '₹10-25 LPA',
+    requirements: [
+      { skill: 'Cybersecurity Basics', importance: 5 },
+      { skill: 'Python Core', importance: 4 },
+      { skill: 'IT Support & Networking', importance: 3 },
+      { skill: 'PostgreSQL', importance: 2 }
+    ]
+  },
+  {
+    name: 'Mobile App Developer',
+    demand: 'High Demand',
+    salary: '₹8-20 LPA',
+    requirements: [
+      { skill: 'Mobile Dev (iOS/Android)', importance: 5 },
+      { skill: 'JavaScript', importance: 4 },
+      { skill: 'React JS', importance: 4 },
+      { skill: 'Git', importance: 3 }
+    ]
+  },
+  {
+    name: 'UI/UX Designer',
+    demand: 'High Demand',
+    salary: '₹6-18 LPA',
+    requirements: [
+      { skill: 'Figma', importance: 5 },
+      { skill: 'UX Research', importance: 4 },
+      { skill: 'HTML & CSS', importance: 3 }
+    ]
+  },
+  {
+    name: 'Product Manager',
+    demand: 'High Demand',
+    salary: '₹15-35 LPA',
+    requirements: [
+      { skill: 'Product Management', importance: 5 },
+      { skill: 'Agile & Scrum', importance: 4 },
+      { skill: 'Business Analysis', importance: 3 },
+      { skill: 'UX Research', importance: 2 }
+    ]
+  },
+  {
+    name: 'Scrum Master',
+    demand: 'Average',
+    salary: '₹12-24 LPA',
+    requirements: [
+      { skill: 'Agile & Scrum', importance: 5 },
+      { skill: 'Product Management', importance: 3 },
+      { skill: 'Business Analysis', importance: 2 }
+    ]
+  },
+  {
+    name: 'Technical Writer',
+    demand: 'Average',
+    salary: '₹6-15 LPA',
+    requirements: [
+      { skill: 'Technical Writing', importance: 5 },
+      { skill: 'HTML & CSS', importance: 3 },
+      { skill: 'Git', importance: 3 }
+    ]
+  },
+  {
+    name: 'Business Analyst',
+    demand: 'High Demand',
+    salary: '₹8-20 LPA',
+    requirements: [
+      { skill: 'Business Analysis', importance: 5 },
+      { skill: 'Data Visualization', importance: 4 },
+      { skill: 'PostgreSQL', importance: 3 },
+      { skill: 'Agile & Scrum', importance: 3 }
+    ]
+  },
+  {
+    name: 'IT Support Specialist',
+    demand: 'Average',
+    salary: '₹3-8 LPA',
+    requirements: [
+      { skill: 'IT Support & Networking', importance: 5 },
+      { skill: 'Cybersecurity Basics', importance: 3 },
+      { skill: 'PostgreSQL', importance: 2 }
+    ]
+  },
+  {
+    name: 'Blockchain Developer',
+    demand: 'High Demand',
+    salary: '₹15-30 LPA',
+    requirements: [
+      { skill: 'Blockchain & Solidity', importance: 5 },
+      { skill: 'JavaScript', importance: 4 },
+      { skill: 'Python Core', importance: 3 },
+      { skill: 'Git', importance: 3 }
+    ]
+  },
+  {
+    name: 'Data Analyst',
+    demand: 'High Demand',
+    salary: '₹6-16 LPA',
+    requirements: [
+      { skill: 'PostgreSQL', importance: 5 },
+      { skill: 'Data Visualization', importance: 5 },
+      { skill: 'Python Core', importance: 4 },
+      { skill: 'Business Analysis', importance: 3 }
+    ]
+  },
+  {
+    name: 'QA Engineer',
+    demand: 'Average',
+    salary: '₹6-15 LPA',
+    requirements: [
+      { skill: 'QA & Testing', importance: 5 },
+      { skill: 'Python Core', importance: 3 },
+      { skill: 'JavaScript', importance: 3 },
+      { skill: 'Git', importance: 3 },
+      { skill: 'Agile & Scrum', importance: 2 }
+    ]
+  },
+  {
+    name: 'Digital Marketing Specialist',
+    demand: 'High Demand',
+    salary: '₹5-12 LPA',
+    requirements: [
+      { skill: 'SEO & Marketing', importance: 5 },
+      { skill: 'Data Visualization', importance: 3 },
+      { skill: 'HTML & CSS', importance: 2 }
     ]
   }
 ];
@@ -154,13 +341,10 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState('Frontend Developer');
   const [isLoggedIn, setIsLoggedIn] = useState(!!api.getStoredToken());
-  const [email, setEmail] = useState('savan@guild.com');
-  const [password, setPassword] = useState('password123');
+  const [authPage, setAuthPage] = useState('login'); // 'login' | 'signup'
   const [theme, setTheme] = useState('dark');
-  const [loginError, setLoginError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isRegister, setIsRegister] = useState(false);
-  const [name, setName] = useState('');
+  const [onboardingComplete, setOnboardingComplete] = useState(true); // assume true until we check
+  const [adminTab, setAdminTab] = useState('dashboard');
   
   // Game user profile state
   const [userProfile, setUserProfile] = useState({
@@ -174,7 +358,8 @@ function App() {
     badgesEarned: 0,
     bio: '',
     githubUrl: '',
-    linkedinUrl: ''
+    linkedinUrl: '',
+    isAdmin: false
   });
 
   // User Skill matrices state (will be fetched from API)
@@ -233,7 +418,9 @@ function App() {
             badgesEarned: userData.badgesEarned,
             bio: userData.bio || '',
             githubUrl: userData.githubUrl || '',
-            linkedinUrl: userData.linkedinUrl || ''
+            linkedinUrl: userData.linkedinUrl || '',
+            isAdmin: userData.isAdmin || false,
+            tokens: userData.tokens || 0
           });
         }
 
@@ -260,10 +447,14 @@ function App() {
           })));
         }
 
-        // Fetch active quest
+        // Fetch active quest — also determines if onboarding is needed
         const questData = await api.getActiveQuest(userId);
         if (questData && questData.roleName) {
           setSelectedRole(questData.roleName);
+          setOnboardingComplete(true);
+        } else {
+          // No active quest means user hasn't onboarded yet
+          setOnboardingComplete(false);
         }
 
         // Fetch achievements
@@ -460,6 +651,17 @@ function App() {
             allAchievements={allAchievements}
           />
         );
+      case 'weeklyquest':
+        return (
+          <WeeklyQuest />
+        );
+      case 'tokenshop':
+        return (
+          <TokenShop 
+            userProfile={userProfile} 
+            onUpdateTokens={(tok) => setUserProfile(prev => ({ ...prev, tokens: tok }))} 
+          />
+        );
       case 'profile':
         return (
           <Profile 
@@ -472,7 +674,6 @@ function App() {
             onLogout={() => {
               api.clearAuth();
               setIsLoggedIn(false);
-              setIsRegister(false);
               setCurrentPage('dashboard');
             }}
             onUpdateProfile={async (updatedData) => {
@@ -514,6 +715,8 @@ function App() {
             }}
           />
         );
+      case 'admin':
+        return <Admin currentUser={userProfile} />;
       default:
         return <Dashboard userProfile={userProfile} selectedRole={selectedRole} userSkills={userSkills} careerRoles={careerRolesData} setPage={setCurrentPage} />;
     }
@@ -521,373 +724,248 @@ function App() {
 
   const xpPercentage = (userProfile.xp / userProfile.maxXp) * 100;
 
+  // ── Onboarding screen (after login, before main app) ────
+  if (isLoggedIn && !onboardingComplete) {
+    return (
+      <Onboarding
+        userProfile={userProfile}
+        onComplete={async (roleName, selectedSkillsMap) => {
+          // Save selected skills to API
+          try {
+            const userId = api.getStoredUserId();
+            if (userId) {
+              // Update skill levels on server
+              for (const [skillName, level] of Object.entries(selectedSkillsMap)) {
+                const skill = userSkills.find(s => s.name === skillName);
+                if (skill?.id) {
+                  await api.updateSkillLevel(userId, skill.id, level);
+                }
+              }
+              // Set active quest
+              const role = careerRolesData.find(r => r.name === roleName);
+              if (role?.id) {
+                await api.setActiveQuest(userId, role.id);
+              }
+            }
+          } catch (err) {
+            console.error('Failed to save onboarding data:', err);
+          }
+          // Update local state
+          setSelectedRole(roleName);
+          setUserSkills(prev => prev.map(s => {
+            const newLevel = selectedSkillsMap[s.name];
+            return newLevel !== undefined ? { ...s, level: newLevel } : s;
+          }));
+          setOnboardingComplete(true);
+          setCurrentPage('dashboard');
+        }}
+      />
+    );
+  }
+
+  // ── Auth success handler (shared by Login + SignUp) ──────
+  const handleAuthSuccess = (data) => {
+    setUserProfile({
+      id: data.user.id,
+      name: data.user.name,
+      email: data.user.email,
+      level: data.user.level,
+      xp: data.user.xp,
+      maxXp: data.user.maxXp,
+      streak: data.user.streak,
+      badgesEarned: data.user.badgesEarned,
+      isAdmin: data.user.isAdmin || false,
+      tokens: data.user.tokens || 0
+    });
+    setIsLoggedIn(true);
+  };
+
   if (!isLoggedIn) {
     return (
-      <div className={`flex items-center justify-center min-h-screen text-[#EDE8D8] relative font-sans ${theme === 'light' ? 'light-theme' : ''} bg-[#06070F]`}>
-        <ParticleBackground />
-        
-        {/* Theme toggle on login page */}
-        <div className="absolute top-6 right-6 z-20">
-          <button 
-            onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
-            className="w-9 h-9 rounded-xl bg-slate-900/60 border border-gold/20 hover:bg-gold-dim flex items-center justify-center text-slate-400 hover:text-gold transition-all cursor-pointer"
-            title="Toggle Light/Dark Theme"
-          >
-            {theme === 'dark' ? <Sun className="w-5 h-5 text-gold" /> : <Moon className="w-5 h-5 text-purple-400" />}
-          </button>
-        </div>
-
-        <div className="glass-panel max-w-md w-full p-8 rounded-2xl border border-gold/20 shadow-2xl relative z-10 mx-4">
-          <div className="text-center mb-6">
-            <span className="w-12 h-12 rounded-xl bg-gradient-to-tr from-gold to-purple-600 flex items-center justify-center shadow-[0_0_15px_rgba(255,184,0,0.5)] text-2xl mx-auto mb-4">
-              ⚔️
-            </span>
-            <h1 className="text-2xl font-bold font-display text-gold-light tracking-wide">
-              SKILLSATHI
-            </h1>
-            <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-1.5 font-sans">
-              {isRegister ? 'Create Guild Account' : 'Enter the Adventurer Guild'}
-            </p>
-          </div>
-
-          {loginError && (
-            <div className="text-red-400 text-xs text-center bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mb-2 font-sans">
-              {loginError}
-            </div>
-          )}
-
-          <form onSubmit={async (e) => {
-            e.preventDefault();
-            setLoginError('');
-            setIsLoading(true);
-            try {
-              if (isRegister) {
-                // Register flow
-                const data = await api.register(name, email, password);
-                setUserProfile({
-                  id: data.user.id,
-                  name: data.user.name,
-                  email: data.user.email,
-                  level: data.user.level,
-                  xp: data.user.xp,
-                  maxXp: data.user.maxXp,
-                  streak: data.user.streak,
-                  badgesEarned: data.user.badgesEarned
-                });
-                setIsLoggedIn(true);
-              } else {
-                // Login flow
-                const data = await api.login(email, password);
-                setUserProfile({
-                  id: data.user.id,
-                  name: data.user.name,
-                  email: data.user.email,
-                  level: data.user.level,
-                  xp: data.user.xp,
-                  maxXp: data.user.maxXp,
-                  streak: data.user.streak,
-                  badgesEarned: data.user.badgesEarned
-                });
-                setIsLoggedIn(true);
-              }
-            } catch (err) {
-              setLoginError(err.message || 'Authentication failed. Is the backend running?');
-              // Fallback: allow mock if API is unreachable
-              if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
-                setLoginError('Backend API unreachable — using offline fallback.');
-                setIsLoggedIn(true);
-              }
-            } finally {
-              setIsLoading(false);
-            }
-          }} className="space-y-4">
-            {isRegister && (
-              <div className="space-y-1 animate-fadeIn">
-                <label className="text-[10px] text-slate-450 font-sans block font-semibold uppercase tracking-wider">Adventurer Name</label>
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="E.g., Savan Chauhan"
-                    className="w-full bg-slate-950/60 border border-gold/20 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-650 focus:outline-none focus:border-gold/60 transition-all font-sans"
-                  />
-                  <span className="absolute right-3.5 top-3 text-slate-500"><User className="w-4 h-4" /></span>
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-1">
-              <label className="text-[10px] text-slate-455 font-sans block font-semibold uppercase tracking-wider">Guild Member Email</label>
-              <div className="relative">
-                <input 
-                  type="email" 
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@guild.com"
-                  className="w-full bg-slate-950/60 border border-gold/20 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-gold/60 transition-all font-sans"
-                />
-                <span className="absolute right-3.5 top-3 text-slate-500"><Mail className="w-4 h-4" /></span>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] text-slate-455 font-sans block font-semibold uppercase tracking-wider">Secret Access Key</label>
-              <div className="relative">
-                <input 
-                  type="password" 
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full bg-slate-950/60 border border-gold/20 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-655 focus:outline-none focus:border-gold/60 transition-all font-sans"
-                />
-                <span className="absolute right-3.5 top-3 text-slate-500"><Lock className="w-4 h-4" /></span>
-              </div>
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              className="w-full mt-2 bg-gradient-to-r from-gold to-amber-500 hover:from-gold-light hover:to-gold text-[#06070F] font-bold font-display tracking-wider py-3 rounded-xl transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,184,0,0.3)] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> REGISTERING...</>
-              ) : isRegister ? (
-                <>INITIATE JOURNEY <LogIn className="w-4 h-4" /></>
-              ) : (
-                <>ENTER GUILD <LogIn className="w-4 h-4" /></>
-              )}
-            </button>
-          </form>
-
-          <div className="mt-4 text-center">
-            <button 
-              onClick={() => {
-                setIsRegister(prev => !prev);
-                setLoginError('');
-              }}
-              className="text-xs text-gold hover:text-gold-light underline transition-all font-sans cursor-pointer bg-transparent border-none"
-            >
-              {isRegister ? 'Already have a guild account? Sign In' : 'New adventurer? Create a Guild Account'}
-            </button>
-          </div>
-
-          <div className="mt-6 text-center text-[10px] text-slate-500 border-t border-gold/10 pt-4 font-sans">
-            Authentication is required. Access your personalized RPG roadmap console.
-          </div>
-        </div>
+      <div style={{ minHeight: '100dvh', background: '#08090E' }}>
+        {authPage === 'login' ? (
+          <Login
+            onLoginSuccess={async (email, password) => {
+              const data = await api.login(email, password);
+              handleAuthSuccess(data);
+            }}
+            onSwitchToSignUp={() => setAuthPage('signup')}
+          />
+        ) : (
+          <SignUp
+            onRegisterSuccess={async (formData) => {
+              const data = await api.register(formData);
+              handleAuthSuccess(data);
+            }}
+            onSwitchToLogin={() => setAuthPage('login')}
+          />
+        )}
       </div>
     );
   }
 
-  return (
-    <div className={`flex min-h-screen text-[#EDE8D8] relative font-sans ${theme === 'light' ? 'light-theme' : ''} bg-[#06070F]`}>
-      {/* Dynamic Starfield canvas */}
-      <ParticleBackground />
+  if (isLoggedIn && currentPage === 'admin') {
+    return (
+      <AdminLayout
+        adminUser={userProfile}
+        activeTab={adminTab}
+        onTabChange={setAdminTab}
+        onExitAdmin={() => setCurrentPage('dashboard')}
+      >
+        <Admin currentUser={userProfile} activeTab={adminTab} />
+      </AdminLayout>
+    );
+  }
 
-      {/* Mobile Sidebar overlay */}
+  // ── Nav item definitions ─────────────────────────────
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard',      icon: <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>, tag: null },
+    { id: 'skills',    label: 'Skills',         icon: <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>, tag: userSkills.filter(s => s.level > 0).length },
+    { id: 'weeklyquest', label: 'Weekly Quest', icon: <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>, tag: null },
+    { id: 'tokenshop', label: 'Rewards',        icon: <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9 11h6"/></svg>, tag: userProfile.tokens || null },
+    { id: 'careers',   label: 'Careers',        icon: <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>, tag: null },
+    { id: 'roadmap',   label: 'Roadmap',        icon: <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path d="M3 12h18M3 6l9-3 9 3M3 18l9 3 9-3"/></svg>, tag: null },
+    { id: 'resources', label: 'Resources',      icon: <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>, tag: null },
+    { id: 'achievements', label: 'Achievements', icon: <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>, tag: unlockedAchievements.length || null },
+    { id: 'profile',   label: 'Profile',        icon: <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>, tag: null },
+    ...(userProfile.isAdmin ? [{ id: 'admin', label: 'Admin', icon: <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, tag: null }] : [])
+  ];
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100dvh', background: '#08090E', color: '#F1F2F4', fontFamily: 'Inter, sans-serif' }}>
+
+      {/* Mobile overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[99] lg:hidden"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 99 }}
         />
       )}
 
-      {/* Left Sidebar console */}
-      <aside 
-        className={`fixed top-0 bottom-0 left-0 w-[270px] bg-gradient-to-b from-[#080914] to-[#06070D] border-r border-gold/20 z-[100] transition-transform duration-300 flex flex-col justify-between shrink-0 overflow-y-auto ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
-      >
-        <div>
+      {/* ── Sidebar ─────────────────────────────────── */}
+      <aside style={{
+        width: 256,
+        background: '#0B0C14',
+        borderRight: '1px solid rgba(255,255,255,0.07)',
+        transition: 'transform 0.3s ease-in-out',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between'
+      }} className={`fixed top-0 bottom-0 left-0 z-[100] ${sidebarOpen ? 'translate-x-0' : '-translate-x-[260px]'} lg:translate-x-0 lg:static lg:z-0`}>
+        
+        <div style={{ overflowY: 'auto', flex: 1, padding: '1.5rem 1.25rem' }}>
           {/* Logo */}
-          <div className="flex items-center gap-3 p-5 border-b border-gold/15">
-            <span className="w-8 h-8 rounded-lg bg-gradient-to-tr from-gold to-purple-600 flex items-center justify-center shadow-[0_0_10px_rgba(255,184,0,0.4)] text-base">
-              ⚔️
-            </span>
-            <div className="leading-tight">
-              <span className="font-bold text-slate-100 tracking-wider font-display text-sm block">
-                SKILLSATHI
-              </span>
-              <span className="text-[10px] text-slate-500 uppercase tracking-widest block font-sans mt-0.5">
-                Career Navigator
-              </span>
-            </div>
-          </div>
-
-          {/* Commander Character Widget */}
-          <div 
-            onClick={() => setCurrentPage('profile')} 
-            className="m-4 p-5 bg-gradient-to-br from-purple-950/20 to-gold-dim border border-gold/15 rounded-2xl relative overflow-hidden text-center cursor-pointer hover:border-gold/35 transition-all group"
-          >
-            <div className="relative w-16 h-16 mx-auto mb-3">
-              <div className="w-16 h-16 rounded-full bg-slate-900 border-2 border-gold flex items-center justify-center text-3xl avatar-glow">
-                🧙
-              </div>
-              <span className="absolute -bottom-1 -right-1 bg-gradient-to-r from-gold to-gold-light text-[#06070F] text-[9px] font-black px-2 py-0.5 rounded-full font-display border border-gold">
-                LV.{userProfile.level}
-              </span>
-            </div>
-
-            <h4 className="text-xs font-bold text-gold-light font-display">
-              {userProfile.name.toUpperCase()}
-            </h4>
-            <span className="text-[9px] uppercase font-bold tracking-widest text-purple-400 bg-purple-500/10 border border-purple-800/30 px-2.5 py-0.5 rounded-full inline-block mt-1 font-sans">
-              Apprentice Explorer
-            </span>
-
-            {/* XP Tracker */}
-            <div className="mt-4">
-              <div className="flex justify-between text-[10px] text-slate-400 mb-1 font-sans">
-                <span>XP Progress</span>
-                <span className="text-gold font-bold">{userProfile.xp}/{userProfile.maxXp}</span>
-              </div>
-              <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-900">
-                <div 
-                  className="h-full bg-gradient-to-r from-purple-500 to-gold rounded-full transition-all duration-500"
-                  style={{ width: `${xpPercentage}%` }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Attributes Tiers */}
-          <div className="px-5 py-3">
-            <h5 className="text-[10px] text-slate-500 font-display uppercase tracking-widest border-b border-gold/10 pb-2 mb-3">
-              ⚔️ Stats Attributes
-            </h5>
-            
-            <div className="space-y-3">
-              {[
-                { name: '🖥️ Technical Skill', val: attributes.technical, color: 'from-cyan-500 to-blue-500' },
-                { name: '🧩 Problem Solving', val: attributes.problemSolving, color: 'from-gold to-amber-500' },
-                { name: '🤝 Collaboration', val: attributes.collaboration, color: 'from-emerald-500 to-teal-500' },
-                { name: '💬 Communication', val: attributes.communication, color: 'from-pink-500 to-purple-500' }
-              ].map(attr => (
-                <div key={attr.name}>
-                  <div className="flex justify-between text-xs mb-1 font-sans">
-                    <span className="text-slate-400">{attr.name}</span>
-                    <span className="font-bold text-slate-200">{attr.val}</span>
-                  </div>
-                  <div className="h-1 w-full bg-slate-950/60 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full bg-gradient-to-r ${attr.color} rounded-full transition-all duration-1000`}
-                      style={{ width: `${attr.val}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2.5rem', paddingLeft: '0.5rem' }}>
+            <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="32" height="32" rx="8" fill="#00C896" fillOpacity="0.15" />
+              <path d="M8 24L16 8L24 24" stroke="#00C896" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M10.5 19H21.5" stroke="#00C896" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <div>
+              <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '0.975rem', color: '#F1F2F4', lineHeight: 1.2 }}>SkillSathi</div>
+              <div style={{ fontSize: '0.675rem', color: '#4B5068', marginTop: '0.15rem', letterSpacing: '0.04em' }}>Smart Career Roadmap</div>
             </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="px-3 py-4 space-y-1">
-            <h5 className="text-[10px] text-slate-500 font-display uppercase tracking-widest border-b border-gold/10 pb-2 mb-2 px-3">
-              🗺️ Guild Navigation
-            </h5>
-
-            {[
-              { id: 'dashboard', label: '🏰 Dashboard', tag: null },
-              { id: 'skills', label: '⚔️ Skill Tree', tag: userSkills.filter(s => s.level > 0).length },
-              { id: 'careers', label: '🏆 Quest Board', tag: null },
-              { id: 'roadmap', label: '🗺️ Quest Log', tag: null },
-              { id: 'resources', label: '📚 Loot items', tag: null },
-              { id: 'achievements', label: '🎖️ Trophies', tag: unlockedAchievements.length },
-              { id: 'profile', label: '👤 Certificate', tag: null }
-            ].map(item => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setCurrentPage(item.id);
-                  setSidebarOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold font-display tracking-wide border transition-all ${
-                  currentPage === item.id 
-                    ? 'bg-gradient-to-r from-gold/10 to-purple-950/5 border-gold/45 text-gold shadow-[inset_0_0_8px_rgba(255,184,0,0.05)]' 
-                    : 'bg-transparent border-transparent text-slate-400 hover:text-gold hover:bg-gold-dim hover:border-gold/15'
-                }`}
-              >
-                <span>{item.label}</span>
-                {item.tag !== null && (
-                  <span className="bg-purple-950/50 border border-purple-800/30 text-purple-400 font-mono text-[9px] px-1.5 py-0.5 rounded-md font-bold">
-                    {item.tag}
-                  </span>
-                )}
-              </button>
-            ))}
-            
-            <button
-              onClick={() => {
-                api.clearAuth();
-                setIsLoggedIn(false);
-                setIsRegister(false);
-                setCurrentPage('dashboard');
-              }}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold font-display tracking-wide border transition-all bg-transparent border-transparent text-red-400 hover:text-red-300 hover:bg-red-500/10 hover:border-red-500/25 mt-4 cursor-pointer"
-            >
-              <span>🚪 Sign Out</span>
-            </button>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            {navItems.map((item) => {
+              const active = currentPage === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setCurrentPage(item.id);
+                    setSidebarOpen(false);
+                  }}
+                  className={`sidebar-item ${active ? 'active' : ''}`}
+                  style={{ width: '100%' }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, flexShrink: 0, color: 'inherit' }}>{item.icon}</span>
+                  <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
+                  {item.tag !== null && (
+                    <span style={{
+                      fontSize: '0.65rem',
+                      fontWeight: 600,
+                      padding: '0.1rem 0.45rem',
+                      borderRadius: 6,
+                      background: 'var(--color-accent-dim)',
+                      color: 'var(--color-accent)',
+                      border: '1px solid var(--color-border-accent)'
+                    }}>{item.tag}</span>
+                  )}
+                </button>
+              );
+            })}
           </nav>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-gold/10 text-center text-[10px] text-slate-500 font-sans">
-          Major Project © 2026
+        {/* Sidebar footer */}
+        <div style={{ padding: '1rem 1.25rem', borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: '0.675rem', color: '#4B5068' }}>
+          SkillSathi &copy; {new Date().getFullYear()}
         </div>
       </aside>
 
-      {/* Main Bridge Frame */}
-      <div className="flex-1 lg:ml-[270px] min-h-screen flex flex-col relative z-10">
-        {/* Header telemetry */}
-        <header className="sticky top-0 bg-[#06070F]/80 backdrop-blur-xl border-b border-gold/15 px-6 py-4 flex items-center justify-between z-50">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-gold border border-gold/20 hover:bg-gold-dim p-2 rounded-xl"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            
-            <h2 className="text-sm font-bold tracking-widest text-slate-100 font-display flex items-center gap-2">
-              BRIDGE CONTROL <span className="text-gold">•</span> <span className="text-[10px] text-slate-400 font-sans uppercase font-normal">Active Quest: {selectedRole}</span>
-            </h2>
+      {/* ── Main content area ─────────────────────────── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100dvh' }}>
+        
+        {/* Top Header bar */}
+        <header style={{
+          height: 64,
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          background: 'rgba(11, 12, 20, 0.5)',
+          backdropFilter: 'blur(12px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 1.5rem',
+          position: 'sticky',
+          top: 0,
+          zIndex: 90
+        }}>
+          {/* Mobile menu trigger */}
+          <button 
+            onClick={() => setSidebarOpen(true)}
+            style={{ background: 'none', border: 'none', color: '#8A8FA8', cursor: 'pointer', padding: 0 }}
+            className="lg:hidden"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Title or custom breadcrumb */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.8125rem', color: '#8A8FA8', fontWeight: 500 }} className="hidden sm:inline">
+              Workspace
+            </span>
+            <span style={{ color: '#4B5068' }} className="hidden sm:inline">/</span>
+            <span style={{ fontSize: '0.8125rem', color: '#F1F2F4', fontWeight: 600, textTransform: 'capitalize' }}>
+              {currentPage}
+            </span>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Theme Toggle Button */}
-            <button 
-              onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
-              className="w-9 h-9 rounded-xl bg-slate-900/60 border border-gold/20 hover:bg-gold-dim flex items-center justify-center text-slate-400 hover:text-gold transition-all cursor-pointer"
-              title="Toggle Light/Dark Theme"
-            >
-              {theme === 'dark' ? <Sun className="w-4 h-4 text-gold" /> : <Moon className="w-4 h-4 text-purple-400" />}
+          {/* User profile & Actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button style={{ background: 'none', border: 'none', color: '#8A8FA8', cursor: 'pointer', position: 'relative', padding: 0 }}>
+              <Bell className="w-4 h-4" />
+              <span style={{ position: 'absolute', top: -2, right: -2, width: 6, height: 6, background: '#00C896', borderRadius: '50%' }} />
             </button>
-
-            <button className="w-9 h-9 rounded-xl bg-slate-900/60 border border-gold/20 hover:bg-gold-dim flex items-center justify-center text-slate-400 hover:text-gold transition-all relative">
-              🔔
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
-            </button>
-            <div 
-              onClick={() => setCurrentPage('profile')} 
-              className="flex items-center gap-2 bg-slate-900/40 border border-gold/10 px-3 py-1.5 rounded-full hover:bg-gold-dim hover:border-gold/30 transition-all cursor-pointer group"
-            >
-              <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-gold to-purple-600 flex items-center justify-center text-xs">
-                🧙
+            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setCurrentPage('profile')}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #00C896 0%, #008765 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.75rem', color: '#08090E' }}>
+                {userProfile.name.charAt(0).toUpperCase()}
               </div>
-              <span className="text-[10px] font-bold text-slate-300 font-display group-hover:text-gold transition-all">{userProfile.name.split(' ')[0]}</span>
+              <span style={{ fontSize: '0.8125rem', color: '#F1F2F4', fontWeight: 650 }} className="hidden md:inline">
+                {userProfile.name}
+              </span>
             </div>
           </div>
         </header>
 
-        {/* Content Viewport */}
-        <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full">
+        {/* Dynamic page viewport */}
+        <main style={{ flex: 1, padding: '1.5rem 1.5rem 3rem 1.5rem', overflowY: 'auto' }} className="lg:max-w-7xl lg:mx-auto w-full">
           {renderView()}
         </main>
       </div>
-
     </div>
   );
 }

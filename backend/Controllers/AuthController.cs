@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using SmartCareerRoadmap.API.Data;
 using SmartCareerRoadmap.API.DTOs;
 using SmartCareerRoadmap.API.Models;
@@ -27,17 +28,27 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest req)
     {
+        // Server-side validation
+        if (string.IsNullOrWhiteSpace(req.Email))
+            return BadRequest(new { message = "Email is required." });
+
+        if (string.IsNullOrWhiteSpace(req.Password))
+            return BadRequest(new { message = "Password is required." });
+
+        if (!IsValidEmail(req.Email))
+            return BadRequest(new { message = "Invalid email format." });
+
         var user = await _db.Users
             .Include(u => u.UserAchievements)
             .FirstOrDefaultAsync(u => u.Email == req.Email);
 
         if (user == null)
-            return Unauthorized(new { message = "Invalid email or password." });
+            return Unauthorized(new { message = "No account found with this email address." });
 
         // Verify password hash
         bool valid = BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash);
         if (!valid)
-            return Unauthorized(new { message = "Invalid email or password." });
+            return Unauthorized(new { message = "Incorrect password. Please try again." });
 
         // Generate JWT token
         var token = GenerateJwt(user);
@@ -48,20 +59,7 @@ public class AuthController : ControllerBase
         return Ok(new AuthResponse
         {
             Token = token,
-            User = new UserDto
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                Level = user.Level,
-                Xp = user.Xp,
-                MaxXp = maxXp,
-                Streak = user.Streak,
-                BadgesEarned = user.UserAchievements.Count,
-                Bio = user.Bio,
-                GithubUrl = user.GithubUrl,
-                LinkedinUrl = user.LinkedinUrl
-            }
+            User = MapUserToDto(user, maxXp)
         });
     }
 
@@ -69,18 +67,44 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest req)
     {
+        // ── Server-side validation ─────────────────────────────
+        if (string.IsNullOrWhiteSpace(req.Name))
+            return BadRequest(new { message = "Full name is required." });
+
+        if (string.IsNullOrWhiteSpace(req.Email))
+            return BadRequest(new { message = "Email is required." });
+
+        if (!IsValidEmail(req.Email))
+            return BadRequest(new { message = "Invalid email format." });
+
+        if (string.IsNullOrWhiteSpace(req.Password))
+            return BadRequest(new { message = "Password is required." });
+
+        if (req.Password.Length < 6)
+            return BadRequest(new { message = "Password must be at least 6 characters." });
+
+        if (req.Password != req.ConfirmPassword)
+            return BadRequest(new { message = "Passwords do not match." });
+
+        if (!string.IsNullOrWhiteSpace(req.PhoneNumber) && !Regex.IsMatch(req.PhoneNumber, @"^\d{10,15}$"))
+            return BadRequest(new { message = "Phone number must be 10-15 digits." });
+
+        // Check for existing user
         if (await _db.Users.AnyAsync(u => u.Email == req.Email))
-            return Conflict(new { message = "Email already registered." });
+            return Conflict(new { message = "An account with this email already exists." });
 
         var user = new User
         {
             Id = Guid.NewGuid(),
-            Name = req.Name,
-            Email = req.Email,
+            Name = req.Name.Trim(),
+            Email = req.Email.Trim().ToLowerInvariant(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
             Level = 1,
             Xp = 0,
-            Streak = 0
+            Streak = 0,
+            PhoneNumber = req.PhoneNumber?.Trim(),
+            EducationLevel = req.EducationLevel?.Trim(),
+            FieldOfStudy = req.FieldOfStudy?.Trim()
         };
 
         _db.Users.Add(user);
@@ -105,21 +129,38 @@ public class AuthController : ControllerBase
         return CreatedAtAction(nameof(Login), new AuthResponse
         {
             Token = token,
-            User = new UserDto
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                Level = 1,
-                Xp = 0,
-                MaxXp = 100,
-                Streak = 0,
-                BadgesEarned = 0,
-                Bio = user.Bio,
-                GithubUrl = user.GithubUrl,
-                LinkedinUrl = user.LinkedinUrl
-            }
+            User = MapUserToDto(user, 100)
         });
+    }
+
+    // ── Helpers ────────────────────────────────────────────────
+
+    private UserDto MapUserToDto(User user, int maxXp)
+    {
+        return new UserDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Level = user.Level,
+            Xp = user.Xp,
+            MaxXp = maxXp,
+            Streak = user.Streak,
+            BadgesEarned = user.UserAchievements?.Count ?? 0,
+            Bio = user.Bio,
+            GithubUrl = user.GithubUrl,
+            LinkedinUrl = user.LinkedinUrl,
+            IsAdmin = user.IsAdmin,
+            Tokens = user.Tokens,
+            PhoneNumber = user.PhoneNumber,
+            EducationLevel = user.EducationLevel,
+            FieldOfStudy = user.FieldOfStudy
+        };
+    }
+
+    private static bool IsValidEmail(string email)
+    {
+        return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase);
     }
 
     private string GenerateJwt(User user)

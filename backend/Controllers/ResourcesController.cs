@@ -92,4 +92,42 @@ public class ResourcesController : ControllerBase
         await _db.SaveChangesAsync();
         return Ok(new { message = "Progress updated successfully.", isCompleted = userResource.IsCompleted });
     }
+
+    /// <summary>POST /api/resources — [Admin] Create a new resource</summary>
+    [HttpPost]
+    public async Task<IActionResult> CreateResource([FromBody] ResourceCreateRequest req)
+    {
+        var skill = await _db.Skills.FirstOrDefaultAsync(s => s.Name == req.SkillName);
+        if (skill == null)
+            return BadRequest(new { message = "Skill not found." });
+
+        var resource = new Models.LearningResource
+        {
+            Id = Guid.NewGuid(),
+            SkillId = skill.Id,
+            Title = req.Title,
+            Platform = req.Platform,
+            Url = req.Url,
+            Duration = req.Duration,
+            Cost = req.Cost
+        };
+
+        _db.LearningResources.Add(resource);
+        await _db.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetAll), new { id = resource.Id }, resource);
+    }
+
+    /// <summary>DELETE /api/resources/{id} — [Admin] Delete a resource</summary>
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteResource(Guid id)
+    {
+        var resource = await _db.LearningResources.FindAsync(id);
+        if (resource == null)
+            return NotFound(new { message = "Resource not found." });
+
+        _db.LearningResources.Remove(resource);
+        await _db.SaveChangesAsync();
+        return Ok(new { message = "Resource deleted successfully." });
+    }
 }

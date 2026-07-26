@@ -45,6 +45,24 @@ public class User
     [MaxLength(255)]
     public string? LinkedinUrl { get; set; }
 
+    [Column("is_admin")]
+    public bool IsAdmin { get; set; } = false;
+
+    [Column("tokens")]
+    public int Tokens { get; set; } = 0;
+
+    [Column("phone_number")]
+    [MaxLength(15)]
+    public string? PhoneNumber { get; set; }
+
+    [Column("education_level")]
+    [MaxLength(50)]
+    public string? EducationLevel { get; set; }
+
+    [Column("field_of_study")]
+    [MaxLength(100)]
+    public string? FieldOfStudy { get; set; }
+
     // Navigation properties
     public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
     public ActiveQuest? ActiveQuest { get; set; }

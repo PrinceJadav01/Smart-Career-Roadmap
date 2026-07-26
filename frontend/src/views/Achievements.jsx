@@ -1,59 +1,74 @@
 import React from 'react';
-import { Award, Lock, ShieldCheck } from 'lucide-react';
+import { Award, Lock, ShieldCheck, CheckCircle, Sparkles } from 'lucide-react';
 
 const Achievements = ({ userProfile, unlockedAchievements, allAchievements }) => {
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Intro Panel */}
-      <div className="glass-panel p-6 rounded-2xl bg-gradient-to-r from-purple-950/20 via-gold-dim to-transparent">
-        <h1 className="text-xl md:text-2xl font-bold tracking-wide text-gold-light font-display">
-          GUILD TROPHY HALL
+      <div className="surface" style={{ padding: '1.5rem', background: 'linear-gradient(135deg, #0F1117 0%, #161822 100%)' }}>
+        <h1 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', fontWeight: 700, color: '#F1F2F4', letterSpacing: '-0.02em' }}>
+          Milestones & Accomplishments
         </h1>
-        <p className="text-sm text-slate-300 mt-2 leading-relaxed font-sans">
-          Review your unlocked badges and honors. Complete quests, improve skill levels, and maintain active learning 
-          streaks to unlock all legendary developer titles.
+        <p style={{ fontSize: '0.875rem', color: '#8A8FA8', marginTop: '0.4rem', lineHeight: 1.6, maxWidth: '48rem' }}>
+          Track key milestones earned as you level up competencies, complete challenges, and maintain learning consistency.
         </p>
       </div>
 
       {/* Grid listing */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
         {allAchievements.map((ach) => {
           const isUnlocked = unlockedAchievements.includes(ach.id);
           
           return (
             <div 
               key={ach.id} 
-              className={`glass-panel p-5 rounded-2xl border transition-all duration-300 text-center flex flex-col items-center justify-between gap-3 ${
-                isUnlocked 
-                  ? 'border-gold/30 bg-gradient-to-b from-slate-900/10 to-gold/5 shadow-[0_4px_15px_rgba(255,184,0,0.05)]' 
-                  : 'opacity-50 border-slate-800 bg-slate-950/20'
-              }`}
+              className={`surface ${isUnlocked ? 'surface-accent' : ''}`}
+              style={{
+                padding: '1.5rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+                justify: 'space-between',
+                gap: '1rem',
+                opacity: isUnlocked ? 1 : 0.5,
+                background: isUnlocked ? '#161822' : '#0F1117'
+              }}
             >
               {/* Badge Icon */}
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl border-2 ${
-                isUnlocked 
-                  ? 'bg-gold-dim border-gold text-gold shadow-[0_0_15px_rgba(255,184,0,0.3)]' 
-                  : 'bg-slate-900/60 border-slate-800 text-slate-500'
-              }`}>
-                {isUnlocked ? ach.icon : <Lock className="w-6 h-6 text-slate-600" />}
+              <div style={{
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.5rem',
+                background: isUnlocked ? 'rgba(0,200,150,0.15)' : '#161822',
+                border: `2px solid ${isUnlocked ? '#00C896' : 'rgba(255,255,255,0.08)'}`,
+                color: isUnlocked ? '#00C896' : '#4B5068'
+              }}>
+                {isUnlocked ? (
+                  <Award style={{ width: 26, height: 26, color: '#00C896' }} />
+                ) : (
+                  <Lock style={{ width: 20, height: 20, color: '#4B5068' }} />
+                )}
               </div>
 
               {/* Title & Desc */}
-              <div className="space-y-1">
-                <h3 className={`text-sm font-bold font-display ${isUnlocked ? 'text-gold' : 'text-slate-400'}`}>
+              <div>
+                <h3 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1rem', fontWeight: 600, color: isUnlocked ? '#F1F2F4' : '#8A8FA8', marginBottom: '0.35rem' }}>
                   {ach.name}
                 </h3>
-                <p className="text-xs text-slate-400 font-sans max-w-[200px] mx-auto leading-normal">
+                <p style={{ fontSize: '0.8125rem', color: '#8A8FA8', lineHeight: 1.5 }}>
                   {ach.description}
                 </p>
               </div>
 
               {/* Status */}
-              <div className="border-t border-slate-800/40 pt-3 w-full mt-2">
-                <span className={`text-[10px] uppercase font-bold tracking-widest font-display ${
-                  isUnlocked ? 'text-emerald-400' : 'text-slate-500'
-                }`}>
-                  {isUnlocked ? '✓ UNLOCKED' : '🔒 LOCKED'}
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.875rem', width: '100%' }}>
+                <span className={`badge ${isUnlocked ? 'badge-accent' : 'badge-neutral'}`} style={{ fontSize: '0.65rem' }}>
+                  {isUnlocked ? '✓ Unlocked' : 'Locked'}
                 </span>
               </div>
             </div>

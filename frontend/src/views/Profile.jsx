@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, Mail, Calendar, Shield, Award, Printer, BookOpen, Edit2, Check, ExternalLink } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
 
 const Profile = ({ 
   userProfile, 
@@ -18,7 +19,6 @@ const Profile = ({
   const [editGithub, setEditGithub] = useState(userProfile.githubUrl || '');
   const [editLinkedin, setEditLinkedin] = useState(userProfile.linkedinUrl || '');
 
-  // Calculate average proficiency level
   const activeSkills = userSkills.filter(s => s.level > 0);
   const activeSkillsCount = activeSkills.length;
   const averageProficiency = activeSkillsCount > 0 
@@ -38,123 +38,77 @@ const Profile = ({
   };
 
   const printCertificate = () => {
-    const downloadPDF = () => {
-      const element = document.getElementById('printable-certificate-container');
-      if (!element) return;
+    const element = document.getElementById('printable-certificate-container');
+    if (!element) {
+      alert('Certificate container not found.');
+      return;
+    }
 
-      // Create a temporary container clone to format specifically for the PDF
-      const clone = element.cloneNode(true);
+    const clone = element.cloneNode(true);
+    clone.style.background = '#fffdf9';
+    clone.style.color = '#1a202c';
+    clone.style.border = '8px double #b5843b';
+    clone.style.boxShadow = 'none';
+    clone.style.padding = '3rem';
+    clone.style.width = '800px';
+    clone.style.borderRadius = '0px';
 
-      // Force absolute light theme styling on the container clone
-      clone.style.background = '#fffdf9';
-      clone.style.color = '#1a202c';
-      clone.style.border = '8px double #b5843b';
-      clone.style.boxShadow = 'none';
-      clone.style.padding = '3rem';
-      clone.style.width = '800px';
-      clone.style.borderRadius = '0px';
+    const title = clone.querySelector('.cert-title');
+    if (title) title.style.color = '#b5843b';
 
-      // 1. Title colors
-      const title = clone.querySelector('.cert-title');
-      if (title) title.style.color = '#b5843b';
+    const sub = clone.querySelector('.cert-sub');
+    if (sub) sub.style.color = '#718096';
 
-      // 2. Subtitle colors
-      const sub = clone.querySelector('.cert-sub');
-      if (sub) sub.style.color = '#718096';
+    const text = clone.querySelector('.cert-text');
+    if (text) {
+      text.style.borderColor = '#cbd5e0';
+      text.style.color = '#2d3748';
+      const strongs = text.querySelectorAll('strong');
+      strongs.forEach(s => { s.style.color = '#1a202c'; });
+      const goldStrongs = text.querySelectorAll('.cert-gold');
+      goldStrongs.forEach(s => { s.style.color = '#b5843b'; });
+      const purpleStrongs = text.querySelectorAll('.cert-purple');
+      purpleStrongs.forEach(s => { s.style.color = '#5a52a3'; });
+    }
 
-      // 3. Central description text & highlighted spans
-      const text = clone.querySelector('.cert-text');
-      if (text) {
-        text.style.borderColor = '#cbd5e0';
-        text.style.color = '#2d3748';
-        const strongs = text.querySelectorAll('strong');
-        strongs.forEach(s => {
-          s.style.color = '#1a202c';
-        });
-        const goldStrongs = text.querySelectorAll('.cert-gold');
-        goldStrongs.forEach(s => {
-          s.style.color = '#b5843b';
-        });
-        const purpleStrongs = text.querySelectorAll('.cert-purple');
-        purpleStrongs.forEach(s => {
-          s.style.color = '#5a52a3';
-        });
-      }
+    const stats = clone.querySelector('.cert-stats');
+    if (stats) {
+      stats.style.background = '#f7fafc';
+      stats.style.borderColor = '#e2e8f0';
+      const values = stats.querySelectorAll('.cert-stat-val');
+      values.forEach(v => { v.style.color = '#1a202c'; });
+      const labels = stats.querySelectorAll('.cert-stat-label');
+      labels.forEach(l => { l.style.color = '#718096'; });
+    }
 
-      // 4. Stats section styles
-      const stats = clone.querySelector('.cert-stats');
-      if (stats) {
-        stats.style.background = '#f7fafc';
-        stats.style.borderColor = '#e2e8f0';
-        const values = stats.querySelectorAll('.cert-stat-val');
-        values.forEach(v => {
-          v.style.color = '#1a202c';
-        });
-        const labels = stats.querySelectorAll('.cert-stat-label');
-        labels.forEach(l => {
-          l.style.color = '#718096';
-        });
-      }
+    const signatures = clone.querySelectorAll('.cert-signature-name');
+    signatures.forEach(s => { s.style.color = '#2d3748'; });
+    const roles = clone.querySelectorAll('.cert-signature-role');
+    roles.forEach(r => { r.style.color = '#718096'; });
+    const sigLines = clone.querySelectorAll('.cert-signature-line');
+    sigLines.forEach(l => { l.style.borderColor = '#cbd5e0'; });
+    const sigSerif = clone.querySelectorAll('.font-serif');
+    sigSerif.forEach(st => { st.style.color = '#8c6a2c'; });
 
-      // 5. Signatures, roles & decorative lines
-      const signatures = clone.querySelectorAll('.cert-signature-name');
-      signatures.forEach(s => {
-        s.style.color = '#2d3748';
-      });
-      const roles = clone.querySelectorAll('.cert-signature-role');
-      roles.forEach(r => {
-        r.style.color = '#718096';
-      });
-      const sigLines = clone.querySelectorAll('.cert-signature-line');
-      sigLines.forEach(l => {
-        l.style.borderColor = '#cbd5e0';
-      });
-      const sigSerif = clone.querySelectorAll('.font-serif');
-      sigSerif.forEach(st => {
-        st.style.color = '#8c6a2c'; // Elegant dark brown/gold for signatures
-      });
+    const seal = clone.querySelector('.cert-seal');
+    if (seal) {
+      seal.style.borderColor = '#b5843b';
+      seal.style.background = '#fffbeb';
+      const sealTexts = seal.querySelectorAll('span, svg');
+      sealTexts.forEach(t => { t.style.color = '#b5843b'; });
+    }
 
-      // 6. Seal stamp
-      const seal = clone.querySelector('.cert-seal');
-      if (seal) {
-        seal.style.borderColor = '#b5843b';
-        seal.style.background = '#fffbeb';
-        const sealTexts = seal.querySelectorAll('span, svg');
-        sealTexts.forEach(t => {
-          t.style.color = '#b5843b';
-        });
-      }
-
-      const opt = {
-        margin:       0.5,
-        filename:     `SkillSathi_Certificate_${userProfile.name.replace(/\s+/g, '_')}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-          scale: 2.5, 
-          useCORS: true,
-          logging: false
-        },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-      };
-
-      window.html2pdf().from(clone).set(opt).save();
+    const opt = {
+      margin:       0.5,
+      filename:     `SkillSathi_Certificate_${userProfile.name.replace(/\s+/g, '_')}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2.5, useCORS: true, logging: false },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
     };
 
-    // Load html2pdf dynamically from cdnjs if not already present
-    if (!window.html2pdf) {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      script.onload = () => {
-        downloadPDF();
-      };
-      document.head.appendChild(script);
-    } else {
-      downloadPDF();
-    }
+    html2pdf().from(clone).set(opt).save();
   };
 
-
-  // Flatten learning resources from resourcesData that match user's active skills
   const activeSkillNames = new Set(activeSkills.map(s => s.name));
   const filteredCourses = [];
   
@@ -170,143 +124,138 @@ const Profile = ({
   });
 
   return (
-    <div className="space-y-6">
-      {/* Intro header */}
-      <div className="glass-panel p-6 rounded-2xl bg-gradient-to-r from-purple-950/20 via-cyan-950/10 to-transparent flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      {/* Intro Header */}
+      <div className="surface" style={{ padding: '1.5rem', background: 'linear-gradient(135deg, #0F1117 0%, #161822 100%)', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-wide text-purple-400 font-display">
-            GUILD MEMBER CERTIFICATE
+          <h1 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', fontWeight: 700, color: '#F1F2F4', letterSpacing: '-0.02em' }}>
+            Profile & Certification Registry
           </h1>
-          <p className="text-sm text-slate-300 mt-2 leading-relaxed font-sans">
-            Review your overall profile credentials, standing tiers, and export your certification statistics.
+          <p style={{ fontSize: '0.875rem', color: '#8A8FA8', marginTop: '0.25rem' }}>
+            Manage your personal profile details, view your official career certificate, and track saved course materials.
           </p>
         </div>
         
-        <div className="flex gap-2">
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button 
             onClick={() => setIsEditing(!isEditing)}
-            className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-850 border border-gold/30 text-gold font-bold font-display text-xs px-4 py-2.5 rounded-xl transition-all cursor-pointer"
+            className="btn-ghost"
+            style={{ fontSize: '0.75rem', padding: '0.45rem 0.85rem' }}
           >
-            <Edit2 className="w-4 h-4" /> {isEditing ? 'Cancel Edit' : 'Edit Registry'}
+            <Edit2 style={{ width: 13, height: 13 }} /> {isEditing ? 'Cancel Edit' : 'Edit Profile'}
           </button>
           
           <button 
             onClick={printCertificate}
-            className="flex items-center justify-center gap-2 bg-gold hover:bg-gold-light text-bg-primary font-bold font-display text-xs px-4 py-2.5 rounded-xl transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,184,0,0.3)] shrink-0 cursor-pointer"
+            className="btn-primary"
+            style={{ fontSize: '0.75rem', padding: '0.45rem 0.85rem' }}
           >
-            <Printer className="w-4 h-4" /> Export Certificate
+            <Printer style={{ width: 13, height: 13 }} /> Export Certificate PDF
           </button>
         </div>
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
         
         {/* Detail Panel */}
-        <div className="glass-panel p-6 rounded-2xl space-y-6 self-start">
-          <h3 className="text-xs uppercase tracking-widest text-slate-400 font-display border-b border-slate-800/40 pb-2 flex items-center gap-2">
-            <User className="w-4 h-4 text-gold" /> Member Registry
+        <div className="surface" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <h3 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.875rem', fontWeight: 600, color: '#F1F2F4', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '0.5rem' }}>
+            User Account Details
           </h3>
 
-          <div className="space-y-4 text-sm font-sans">
+          <div style={{ fontSize: '0.875rem' }}>
             {isEditing ? (
-              <div className="space-y-3.5">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
                 <div>
-                  <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">Adventurer Name</label>
+                  <label className="input-label" htmlFor="edit-name">Full Name</label>
                   <input 
+                    id="edit-name"
                     type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="w-full bg-slate-950/60 border border-gold/20 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-gold/60"
+                    className="input-field"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">Guild Member Bio</label>
+                  <label className="input-label" htmlFor="edit-bio">Bio</label>
                   <textarea 
+                    id="edit-bio"
                     value={editBio}
                     onChange={(e) => setEditBio(e.target.value)}
-                    placeholder="Tell the guild about your goals..."
-                    className="w-full bg-slate-950/60 border border-gold/20 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-gold/60 h-20 resize-none"
+                    placeholder="Brief professional summary..."
+                    className="input-field"
+                    style={{ height: 75, resize: 'none' }}
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">GitHub Profile Link</label>
+                  <label className="input-label" htmlFor="edit-github">GitHub Profile URL</label>
                   <input 
+                    id="edit-github"
                     type="text"
                     value={editGithub}
                     onChange={(e) => setEditGithub(e.target.value)}
                     placeholder="https://github.com/username"
-                    className="w-full bg-slate-950/60 border border-gold/20 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-gold/60"
+                    className="input-field"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">LinkedIn Profile Link</label>
+                  <label className="input-label" htmlFor="edit-linkedin">LinkedIn Profile URL</label>
                   <input 
+                    id="edit-linkedin"
                     type="text"
                     value={editLinkedin}
                     onChange={(e) => setEditLinkedin(e.target.value)}
                     placeholder="https://linkedin.com/in/username"
-                    className="w-full bg-slate-950/60 border border-gold/20 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-gold/60"
+                    className="input-field"
                   />
                 </div>
                 <button 
                   onClick={handleSave}
-                  className="w-full mt-2 bg-gradient-to-r from-gold to-amber-500 text-bg-primary font-bold font-display text-xs py-2 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  className="btn-primary"
+                  style={{ width: '100%', marginTop: '0.25rem' }}
                 >
-                  <Check className="w-4 h-4" /> Save Guild Records
+                  <Check style={{ width: 14, height: 14 }} /> Save Changes
                 </button>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
-                  <span className="text-xs text-slate-400 block mb-1">Guild Member:</span>
-                  <span className="font-semibold text-slate-200 block text-sm">{userProfile.name}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#4B5068', display: 'block' }}>Name</span>
+                  <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, color: '#F1F2F4', fontSize: '1rem' }}>{userProfile.name}</span>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 block mb-1">Registrar Email:</span>
-                  <span className="font-semibold text-slate-200 block">{userProfile.email}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#4B5068', display: 'block' }}>Email</span>
+                  <span style={{ color: '#8A8FA8' }}>{userProfile.email}</span>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 block mb-1">Member Bio:</span>
-                  <span className="text-slate-300 block text-xs leading-relaxed italic bg-slate-950/20 border border-gold/5 p-2.5 rounded-xl">
-                    {userProfile.bio || 'Adventurer has not written a bio yet.'}
-                  </span>
+                  <span style={{ fontSize: '0.75rem', color: '#4B5068', display: 'block', marginBottom: '0.25rem' }}>Bio</span>
+                  <div className="surface-2" style={{ padding: '0.75rem', fontSize: '0.8125rem', color: '#8A8FA8', fontStyle: 'italic' }}>
+                    {userProfile.bio || 'No bio specified yet.'}
+                  </div>
                 </div>
-                <div className="flex gap-3 pt-2">
+                <div style={{ display: 'flex', gap: '0.875rem' }}>
                   {userProfile.githubUrl && (
-                    <a 
-                      href={userProfile.githubUrl} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="flex items-center gap-1 text-xs text-gold hover:text-gold-light transition-all animate-fadeIn"
-                    >
-                      🌐 GitHub
+                    <a href={userProfile.githubUrl} target="_blank" rel="noreferrer" style={{ color: '#00C896', fontSize: '0.75rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      GitHub <ExternalLink style={{ width: 12, height: 12 }} />
                     </a>
                   )}
                   {userProfile.linkedinUrl && (
-                    <a 
-                      href={userProfile.linkedinUrl} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="flex items-center gap-1 text-xs text-gold hover:text-gold-light transition-all animate-fadeIn"
-                    >
-                      🔗 LinkedIn
+                    <a href={userProfile.linkedinUrl} target="_blank" rel="noreferrer" style={{ color: '#00C896', fontSize: '0.75rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      LinkedIn <ExternalLink style={{ width: 12, height: 12 }} />
                     </a>
                   )}
-                </div>
-                <div>
-                  <span className="text-xs text-slate-400 block mb-1">Educational Background:</span>
-                  <span className="font-semibold text-slate-200 block">B.Tech CSE - Semester 7</span>
                 </div>
               </div>
             )}
 
-            <div className="pt-4 border-t border-slate-800/40">
+            <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1rem' }}>
               <button 
                 onClick={onLogout}
-                className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/25 hover:border-red-500/45 text-red-400 font-semibold font-display text-xs py-2 rounded-xl transition-all cursor-pointer"
+                className="btn-ghost"
+                style={{ width: '100%', color: '#F87171', justifyContent: 'center' }}
               >
-                🚪 Sign Out of Guild
+                Sign Out
               </button>
             </div>
           </div>
@@ -315,206 +264,162 @@ const Profile = ({
         {/* Certificate Display Panel */}
         <div 
           id="printable-certificate-container"
-          className="lg:col-span-2 glass-panel p-8 rounded-2xl border-2 border-dashed border-gold/40 bg-gradient-to-b from-bg-card to-purple-950/5 relative overflow-hidden"
+          className="surface"
+          style={{ gridColumn: 'span 2', padding: '2rem', border: '2px dashed rgba(0,200,150,0.3)', background: 'linear-gradient(180deg, #0F1117 0%, #161822 100%)', position: 'relative', overflow: 'hidden' }}
         >
-          {/* Ornate Gold Background Elements */}
-          <div className="absolute top-0 right-0 w-32 h-32 opacity-10 bg-radial-gradient from-gold to-transparent" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 opacity-10 bg-radial-gradient from-purple-600 to-transparent" />
-          
-          <div className="text-center space-y-6">
-            <div className="space-y-1.5">
-              <span className="text-3xl block filter drop-shadow-[0_0_8px_rgba(255,184,0,0.4)]">📜</span>
-              <h2 className="text-xl md:text-2xl font-bold text-gold font-display tracking-widest cert-title">
-                CERTIFICATE OF ACHIEVEMENTS
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div>
+              <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>📜</div>
+              <h2 className="cert-title" style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: '#00C896', letterSpacing: '0.05em' }}>
+                CERTIFICATE OF ACCOMPLISHMENT
               </h2>
-              <span className="text-xs text-slate-400 block tracking-widest font-sans italic cert-sub">
-                Issued by SkillSathi Credentials Register
+              <span className="cert-sub" style={{ fontSize: '0.75rem', color: '#8A8FA8', fontStyle: 'italic' }}>
+                Issued by SkillSathi Career Progression Registry
               </span>
             </div>
 
-            <div className="max-w-md mx-auto text-sm text-slate-300 font-sans leading-relaxed border-t border-b border-slate-800/40 py-6 cert-text">
-              This official credential registry certifies that <strong className="text-gold font-display text-xs cert-gold">{userProfile.name.toUpperCase()}</strong> has successfully reached the standing tier of <strong className="text-purple-400 font-display text-xs cert-purple">LEVEL {userProfile.level}</strong> and holds an average capability score of <strong className="text-cyan-400">{averageProficiency}/5.0</strong> across all mapped career domains on <strong className="text-gold">SkillSathi</strong>.
+            <div className="cert-text" style={{ maxWidth: 480, margin: '0 auto', fontSize: '0.875rem', color: '#8A8FA8', lineHeight: 1.7, borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '1.25rem 0' }}>
+              This official credential certifies that <strong className="cert-gold" style={{ color: '#00C896', fontFamily: 'Outfit, sans-serif' }}>{userProfile.name.toUpperCase()}</strong> has attained a profile standing of <strong className="cert-purple" style={{ color: '#60A5FA' }}>LEVEL {userProfile.level}</strong> with an average competency score of <strong style={{ color: '#F1F2F4' }}>{averageProficiency}/5.0</strong> across mapped career pathways.
             </div>
 
             {/* Micro Stats inside Certificate */}
-            <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto cert-stats bg-slate-900/30 border border-gold/10 p-3 rounded-xl">
-              <div className="text-center">
-                <span className="text-sm font-bold text-slate-150 font-display block cert-stat-val">
+            <div className="cert-stats surface-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', maxWidth: 380, margin: '0 auto', padding: '0.875rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <span className="cert-stat-val" style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '1rem', color: '#F1F2F4', display: 'block' }}>
                   {activeSkillsCount}
                 </span>
-                <span className="text-[9px] uppercase text-slate-450 tracking-wider font-sans block mt-1 cert-stat-label">
-                  Skills Mastered
+                <span className="cert-stat-label" style={{ fontSize: '0.65rem', color: '#4B5068', textTransform: 'uppercase' }}>
+                  Skills Rated
                 </span>
               </div>
-              <div className="text-center">
-                <span className="text-sm font-bold text-slate-150 font-display block cert-stat-val">
+              <div style={{ textAlign: 'center' }}>
+                <span className="cert-stat-val" style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '1rem', color: '#F1F2F4', display: 'block' }}>
                   {unlockedAchievements.length}
                 </span>
-                <span className="text-[9px] uppercase text-slate-450 tracking-wider font-sans block mt-1 cert-stat-label">
-                  Trophies Earned
+                <span className="cert-stat-label" style={{ fontSize: '0.65rem', color: '#4B5068', textTransform: 'uppercase' }}>
+                  Milestones
                 </span>
               </div>
-              <div className="text-center">
-                <span className="text-sm font-bold text-slate-150 font-display block cert-stat-val">
+              <div style={{ textAlign: 'center' }}>
+                <span className="cert-stat-val" style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '1rem', color: '#F1F2F4', display: 'block' }}>
                   {selectedRole ? selectedRole.split(' ')[0] : 'None'}
                 </span>
-                <span className="text-[9px] uppercase text-slate-450 tracking-wider font-sans block mt-1 cert-stat-label">
-                  Active Quest
+                <span className="cert-stat-label" style={{ fontSize: '0.65rem', color: '#4B5068', textTransform: 'uppercase' }}>
+                  Target Path
                 </span>
               </div>
             </div>
 
-            {/* Professional Signatures & Stamp Layout */}
-            <div className="grid grid-cols-3 items-center gap-4 pt-6 border-t border-slate-800/30">
-              {/* Savan Chauhan signature line */}
-              <div className="text-center space-y-1">
-                <div className="text-gold-light italic font-serif text-sm h-6 select-none font-bold tracking-wider">
+            {/* Signatures */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', alignItems: 'center', gap: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontFamily: 'serif', fontStyle: 'italic', fontSize: '0.9rem', color: '#00C896', fontWeight: 700, height: 24 }}>
                   Savan Chauhan
                 </div>
-                <div className="w-24 mx-auto border-t border-slate-700/50 cert-signature-line" />
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest cert-signature-name">
-                  Savan Chauhan
-                </div>
-                <div className="text-[8px] text-slate-500 font-sans cert-signature-role">
-                  Founder, SkillSathi
+                <div className="cert-signature-line" style={{ width: 80, margin: '0.25rem auto', borderTop: '1px solid rgba(255,255,255,0.15)' }} />
+                <div className="cert-signature-name" style={{ fontSize: '0.7rem', fontWeight: 700, color: '#F1F2F4' }}>Savan Chauhan</div>
+                <div className="cert-signature-role" style={{ fontSize: '0.65rem', color: '#4B5068' }}>Founder, SkillSathi</div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <div className="cert-seal" style={{ width: 56, height: 56, borderRadius: '50%', border: '2px dashed #00C896', background: 'rgba(0,200,150,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <Award style={{ width: 18, height: 18, color: '#00C896' }} />
+                  <span style={{ fontSize: '0.55rem', fontWeight: 700, color: '#00C896', letterSpacing: '0.04em' }}>OFFICIAL</span>
                 </div>
               </div>
 
-              {/* Center Seal Stamp */}
-              <div className="flex justify-center">
-                <div className="w-16 h-16 rounded-full border-2 border-dashed border-gold/45 bg-gold-dim/15 flex flex-col items-center justify-center text-center shadow-[0_0_10px_rgba(255,184,0,0.1)] cert-seal select-none cursor-default">
-                  <span className="text-[8px] font-black text-gold font-display uppercase tracking-widest leading-none">OFFICIAL</span>
-                  <Award className="w-4 h-4 text-gold my-0.5" />
-                  <span className="text-[7px] text-gold font-sans uppercase tracking-widest leading-none">SEAL</span>
-                </div>
-              </div>
-
-              {/* Prince Jadav signature line */}
-              <div className="text-center space-y-1">
-                <div className="text-gold-light italic font-serif text-sm h-6 select-none font-bold tracking-wider">
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontFamily: 'serif', fontStyle: 'italic', fontSize: '0.9rem', color: '#00C896', fontWeight: 700, height: 24 }}>
                   Prince Jadav
                 </div>
-                <div className="w-24 mx-auto border-t border-slate-700/50 cert-signature-line" />
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest cert-signature-name">
-                  Prince Jadav
-                </div>
-                <div className="text-[8px] text-slate-500 font-sans cert-signature-role">
-                  Co-Founder, SkillSathi
-                </div>
+                <div className="cert-signature-line" style={{ width: 80, margin: '0.25rem auto', borderTop: '1px solid rgba(255,255,255,0.15)' }} />
+                <div className="cert-signature-name" style={{ fontSize: '0.7rem', fontWeight: 700, color: '#F1F2F4' }}>Prince Jadav</div>
+                <div className="cert-signature-role" style={{ fontSize: '0.65rem', color: '#4B5068' }}>Co-Founder, SkillSathi</div>
               </div>
-            </div>
-
-            {/* Authenticity Badge */}
-            <div className="pt-3 flex items-center justify-center gap-1.5 text-[9px] text-slate-500">
-              <Shield className="w-3.5 h-3.5 text-gold/60" /> Authenticated Registry: SKILLSATHI-2026-REG
             </div>
           </div>
         </div>
 
       </div>
 
-      {/* Skills & Recommended Courses Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 font-sans">
-        {/* Skill Masteries */}
-        <div className="glass-panel p-6 rounded-2xl space-y-4">
-          <h3 className="text-xs uppercase tracking-widest text-slate-400 font-display border-b border-slate-800/40 pb-2 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-gold" /> Active Skill Tree Masteries
+      {/* Skill Masteries & Resources */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        <div className="surface" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <h3 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.875rem', fontWeight: 600, color: '#F1F2F4', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '0.5rem' }}>
+            Active Skill Proficiency
           </h3>
           
           {activeSkillsCount > 0 ? (
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {userSkills
                 .filter(s => s.level > 0)
                 .map(skill => (
-                  <div key={skill.name} className="flex items-center justify-between">
+                  <div key={skill.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <span className="font-semibold text-slate-200 block text-xs">{skill.name}</span>
-                      <span className="text-[10px] text-slate-500 uppercase tracking-wider">{skill.category}</span>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#F1F2F4', display: 'block' }}>{skill.name}</span>
+                      <span style={{ fontSize: '0.675rem', color: '#4B5068' }}>{skill.category}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <span 
-                            key={star} 
-                            className={`text-xs ${star <= skill.level ? 'text-gold' : 'text-slate-700'}`}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                      <span className="bg-gold-dim border border-gold/20 text-gold font-bold text-[10px] px-2 py-0.5 rounded font-display">
-                        Lvl {skill.level}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ color: '#00C896', fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace' }}>
+                        {'★'.repeat(skill.level)}{'☆'.repeat(5 - skill.level)}
+                      </span>
+                      <span className="badge badge-accent" style={{ fontSize: '0.65rem' }}>
+                        Lv. {skill.level}
                       </span>
                     </div>
                   </div>
                 ))}
             </div>
           ) : (
-            <p className="text-xs text-slate-500 italic py-4">No skill points allocated yet. Visit the Skill Tree to level up!</p>
+            <div style={{ padding: '1.5rem 0', textAlign: 'center', color: '#4B5068', fontSize: '0.8125rem' }}>
+              No active skills rated yet.
+            </div>
           )}
         </div>
 
-        {/* Recommended & Completed Loot */}
-        <div className="glass-panel p-6 rounded-2xl space-y-4">
-          <h3 className="text-xs uppercase tracking-widest text-slate-400 font-display border-b border-slate-800/40 pb-2 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-purple-400" /> Recommended Loot Items (Courses)
+        {/* Resources */}
+        <div className="surface" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <h3 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.875rem', fontWeight: 600, color: '#F1F2F4', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '0.5rem' }}>
+            Saved & Active Resources
           </h3>
           
           {filteredCourses.length > 0 ? (
-            <div className="space-y-3.5 max-h-[350px] overflow-y-auto pr-1">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: 320, overflowY: 'auto' }}>
               {filteredCourses.map((course, idx) => (
                 <div 
                   key={course.id || idx} 
-                  className={`p-3 rounded-xl transition-all flex items-center justify-between gap-4 border ${
-                    course.isCompleted 
-                      ? 'bg-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/35' 
-                      : 'bg-slate-950/40 border-gold/10 hover:border-gold/35'
-                  }`}
+                  className="surface-2"
+                  style={{ padding: '0.75rem 0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}
                 >
-                  <div className="flex items-start gap-2.5">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minWidth: 0 }}>
                     <input 
                       type="checkbox"
                       checked={!!course.isCompleted}
                       onChange={(e) => onToggleResource && onToggleResource(course.id, e.target.checked)}
-                      className="mt-1 w-3.5 h-3.5 rounded border-gold/30 text-emerald-500 focus:ring-emerald-500/30 cursor-pointer"
+                      style={{ accentColor: '#00C896', width: 14, height: 14, cursor: 'pointer' }}
                     />
-                    <div className="space-y-1">
-                      <span className={`text-xs font-semibold block leading-tight ${
-                        course.isCompleted ? 'text-slate-400 line-through' : 'text-slate-200'
-                      }`}>
+                    <div style={{ minWidth: 0 }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: course.isCompleted ? '#4B5068' : '#F1F2F4', textDecoration: course.isCompleted ? 'line-through' : 'none', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {course.title}
                       </span>
-                      <div className="flex items-center gap-2 text-[9px] text-slate-500">
-                        <span className="bg-purple-950/40 border border-purple-800/30 text-purple-400 px-1.5 py-0.25 rounded font-bold">{course.skillName}</span>
-                        <span>•</span>
-                        <span>{course.platform}</span>
-                        <span>•</span>
-                        <span>{course.time}</span>
+                      <div style={{ fontSize: '0.675rem', color: '#4B5068', marginTop: '0.1rem' }}>
+                        {course.skillName} • {course.platform}
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25 shrink-0">
-                      {course.cost}
-                    </span>
-                    {course.url && (
-                      <a 
-                        href={course.url} 
-                        target="_blank" 
-                        rel="noreferrer" 
-                        className="text-slate-500 hover:text-gold transition-all"
-                        title="Open Resource link"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                  </div>
+                  {course.url && (
+                    <a href={course.url} target="_blank" rel="noreferrer" style={{ color: '#00C896', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                      <ExternalLink style={{ width: 13, height: 13 }} />
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-slate-500 italic py-4">Activate skill levels in your Skill Tree to unlock course recommendations!</p>
+            <div style={{ padding: '1.5rem 0', textAlign: 'center', color: '#4B5068', fontSize: '0.8125rem' }}>
+              Rate your skills to receive personalized course recommendations.
+            </div>
           )}
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Award, BookOpen, CheckCircle, Shield, Target, TrendingUp, Zap } from 'lucide-react';
+import { Award, BookOpen, CheckCircle, Shield, Target, TrendingUp, Zap, Sparkles, Layers, ArrowUpRight } from 'lucide-react';
 
 const Dashboard = ({ userProfile, selectedRole, userSkills, careerRoles, setPage }) => {
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -18,9 +18,8 @@ const Dashboard = ({ userProfile, selectedRole, userSkills, careerRoles, setPage
       const userSkill = userSkills.find(s => s.name === req.skill);
       const proficiency = userSkill ? userSkill.level : 0; // 0 to 5
       
-      // Calculate weight based on importance (1 to 5)
       const weight = req.importance;
-      totalWeight += weight * 5; // Max possible weight (5 proficiency * weight)
+      totalWeight += weight * 5;
       earnedWeight += weight * proficiency;
     });
 
@@ -30,7 +29,6 @@ const Dashboard = ({ userProfile, selectedRole, userSkills, careerRoles, setPage
   const score = calculateEmployability();
 
   useEffect(() => {
-    // Count up animation
     setAnimatedScore(0);
     const timeout = setTimeout(() => {
       let current = 0;
@@ -48,233 +46,213 @@ const Dashboard = ({ userProfile, selectedRole, userSkills, careerRoles, setPage
     return () => clearTimeout(timeout);
   }, [score]);
 
-  // Circumference for stroke R=68 is 2 * PI * 68 = 427.25
   const strokeCircumference = 2 * Math.PI * 68;
   const strokeDashoffset = strokeCircumference - (animatedScore / 100) * strokeCircumference;
 
-  // Derive Readiness Label
   const getReadinessLabel = (val) => {
-    if (val >= 85) return { label: '⚡ Combat Ready (Job Ready)', color: 'text-emerald-400 border-emerald-500 bg-emerald-500/10' };
-    if (val >= 60) return { label: '🛡️ Vanguard (Almost Ready)', color: 'text-cyan-400 border-cyan-500 bg-cyan-500/10' };
-    if (val >= 35) return { label: '⚔️ Squire (Needs Training)', color: 'text-amber-400 border-amber-500 bg-amber-500/10' };
-    return { label: '🐣 Novice (Beginner)', color: 'text-red-400 border-red-500 bg-red-500/10' };
+    if (val >= 85) return { label: 'Job Ready', badge: 'badge-accent' };
+    if (val >= 60) return { label: 'Almost Ready', badge: 'badge-warn' };
+    if (val >= 35) return { label: 'Developing Skills', badge: 'badge-neutral' };
+    return { label: 'Beginning Journey', badge: 'badge-danger' };
   };
 
   const status = getReadinessLabel(score);
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Welcome Banner */}
-      <div className="glass-panel p-6 rounded-2xl relative overflow-hidden bg-gradient-to-r from-purple-900/20 via-gold-dim to-cyan-900/10 transition-all duration-300">
-        <div className="absolute top-0 right-0 w-80 h-full bg-radial-gradient from-gold/5 to-transparent pointer-events-none" />
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <h1 className="text-xl md:text-2xl font-bold tracking-wide text-gold-light font-display">
-              WELCOME BACK, {userProfile.name.toUpperCase()}!
+      <div className="surface" style={{ padding: '1.75rem', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, #0F1117 0%, #161822 100%)' }}>
+        <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: '100%', background: 'radial-gradient(circle, rgba(0,200,150,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem', position: 'relative', zIndex: 1 }}>
+          <div style={{ maxWidth: '42rem' }}>
+            <div className="badge badge-accent" style={{ marginBottom: '0.75rem' }}>
+              <Sparkles style={{ width: 12, height: 12 }} /> Target Role: {selectedRole}
+            </div>
+            <h1 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.75rem', fontWeight: 700, color: '#F1F2F4', letterSpacing: '-0.02em' }}>
+              Welcome back, {userProfile.name}
             </h1>
-            <p className="text-sm text-slate-300 leading-relaxed max-w-2xl font-sans">
-              Your quest to conquer the <strong className="text-gold">{selectedRole}</strong> role is in progress. 
-              Keep leveling up your skills to maximize your warp readiness. The tech guild awaits your ascension!
+            <p style={{ fontSize: '0.875rem', color: '#8A8FA8', marginTop: '0.5rem', lineHeight: 1.6 }}>
+              Your career match rating for <strong style={{ color: '#F1F2F4' }}>{selectedRole}</strong> is currently at <strong style={{ color: '#00C896' }}>{score}%</strong>. Keep leveling up your key skills to close the gap.
             </p>
           </div>
-          <div className="flex gap-3 flex-shrink-0">
-            <div className="bg-gold-dim border border-gold/30 rounded-xl px-4 py-3 text-center min-w-[85px] backdrop-blur-md">
-              <span className="text-lg font-bold text-gold font-display block">🔥 {userProfile.streak}</span>
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest block mt-0.5">Day Streak</span>
+
+          <div style={{ display: 'flex', gap: '0.875rem' }}>
+            <div className="surface-2" style={{ padding: '0.75rem 1.25rem', textAlign: 'center', minWidth: 95 }}>
+              <span style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.25rem', fontWeight: 700, color: '#00C896', display: 'block' }}>
+                {userProfile.streak}d
+              </span>
+              <span style={{ fontSize: '0.675rem', color: '#4B5068', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Active Streak
+              </span>
             </div>
-            <div className="bg-purple-950/30 border border-purple-800/30 rounded-xl px-4 py-3 text-center min-w-[85px] backdrop-blur-md">
-              <span className="text-lg font-bold text-purple-400 font-display block">⚡ {userSkills.filter(s => s.level > 0).length}</span>
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest block mt-0.5">Skills Active</span>
+            <div className="surface-2" style={{ padding: '0.75rem 1.25rem', textAlign: 'center', minWidth: 95 }}>
+              <span style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.25rem', fontWeight: 700, color: '#60A5FA', display: 'block' }}>
+                {userSkills.filter(s => s.level > 0).length}
+              </span>
+              <span style={{ fontSize: '0.675rem', color: '#4B5068', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Skills Active
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Stats Cockpit Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Main Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
         
-        {/* Employability Score Ring */}
-        <div className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center text-center">
-          <h3 className="text-xs uppercase tracking-widest text-slate-400 font-display mb-4 flex items-center gap-1.5 self-start">
-            <Shield className="w-4 h-4 text-gold" /> Combat Readiness Matrix
-          </h3>
-          
-          <div className="relative w-44 h-44 my-2 flex items-center justify-center">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 160 160">
-              {/* Background ring */}
+        {/* Match Ring Card */}
+        <div className="surface" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#8A8FA8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Role Match Rating
+            </span>
+            <span className={`badge ${status.badge}`}>
+              {status.label}
+            </span>
+          </div>
+
+          <div style={{ position: 'relative', width: 170, height: 170, margin: '1rem 0' }}>
+            <svg style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 160 160">
+              <circle cx="80" cy="80" r="68" className="score-ring-track" fill="none" strokeWidth="10" />
               <circle
                 cx="80"
                 cy="80"
                 r="68"
-                className="fill-none stroke-slate-800/60"
-                strokeWidth="10"
-              />
-              {/* Foreground animated ring */}
-              <circle
-                cx="80"
-                cy="80"
-                r="68"
-                className="fill-none stroke-gold"
+                className="score-ring-fill"
+                fill="none"
                 strokeWidth="10"
                 strokeLinecap="round"
                 strokeDasharray={strokeCircumference}
                 strokeDashoffset={strokeDashoffset}
-                style={{
-                  transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                  filter: 'drop-shadow(0 0 8px rgba(255, 184, 0, 0.5))',
-                }}
+                style={{ transition: 'stroke-dashoffset 1.5s cubic-bezier(0.16, 1, 0.3, 1)' }}
               />
             </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-black font-decorative text-gold leading-none">
-                {animatedScore}
-                <span className="text-sm font-semibold">%</span>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontFamily: 'Outfit, sans-serif', fontSize: '2.25rem', fontWeight: 800, color: '#F1F2F4', lineHeight: 1 }}>
+                {animatedScore}<span style={{ fontSize: '1.125rem', color: '#00C896' }}>%</span>
               </span>
-              <span className="text-[9px] uppercase tracking-widest text-slate-400 mt-1 font-sans">Match Rating</span>
+              <span style={{ fontSize: '0.7rem', color: '#4B5068', marginTop: '0.25rem' }}>Employability</span>
             </div>
           </div>
 
-          <div className={`mt-3 border rounded-full px-4 py-1 text-xs font-semibold tracking-wide ${status.color}`}>
-            {status.label}
-          </div>
-          
-          <p className="text-xs text-slate-400 mt-4 leading-normal font-sans">
-            Targeting: <strong className="text-slate-200">{selectedRole}</strong>
+          <p style={{ fontSize: '0.8125rem', color: '#8A8FA8', marginTop: '0.5rem' }}>
+            Targeting: <strong style={{ color: '#F1F2F4' }}>{selectedRole}</strong>
           </p>
-          <button 
+          <button
             onClick={() => setPage('careers')}
-            className="text-[10px] uppercase font-bold text-gold hover:text-gold-light hover:underline mt-2 flex items-center gap-1 font-display"
+            className="btn-ghost"
+            style={{ marginTop: '0.875rem', fontSize: '0.75rem', padding: '0.4rem 0.875rem' }}
           >
-            Change Target Role <Target className="w-3 h-3" />
+            Change Target Role <Target style={{ width: 13, height: 13 }} />
           </button>
         </div>
 
-        {/* Quest Telemetry Stats */}
-        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="glass-panel p-5 rounded-xl flex items-center gap-4 transition-all duration-200">
-            <div className="w-12 h-12 rounded-xl bg-purple-950/40 border border-purple-800/40 flex items-center justify-center text-xl shadow-lg">
-              🛡️
+        {/* 4 Stat Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', gridColumn: 'span 2' }}>
+          <div className="stat-card">
+            <div className="stat-icon">
+              <Layers style={{ width: 20, height: 20 }} />
             </div>
             <div>
-              <div className="text-lg font-bold text-slate-100 font-display leading-tight">
-                LEVEL {userProfile.level}
-              </div>
-              <div className="text-[11px] text-slate-400 mt-1 font-sans">
-                Active Guild Standing Tier
-              </div>
+              <div className="stat-value">Level {userProfile.level}</div>
+              <div className="stat-label">Profile Standing</div>
             </div>
           </div>
 
-          <div className="glass-panel p-5 rounded-xl flex items-center gap-4 transition-all duration-200">
-            <div className="w-12 h-12 rounded-xl bg-cyan-950/40 border border-cyan-800/40 flex items-center justify-center text-xl shadow-lg">
-              🗺️
+          <div className="stat-card">
+            <div className="stat-icon" style={{ color: '#60A5FA' }}>
+              <BookOpen style={{ width: 20, height: 20 }} />
             </div>
             <div>
-              <div className="text-lg font-bold text-slate-100 font-display leading-tight">
-                {userSkills.filter(s => s.level > 0).length} / {userSkills.length}
-              </div>
-              <div className="text-[11px] text-slate-400 mt-1 font-sans">
-                Skill Spheres Discovered
-              </div>
+              <div className="stat-value">{userSkills.filter(s => s.level > 0).length} / {userSkills.length}</div>
+              <div className="stat-label">Skills Discovered</div>
             </div>
           </div>
 
-          <div className="glass-panel p-5 rounded-xl flex items-center gap-4 transition-all duration-200">
-            <div className="w-12 h-12 rounded-xl bg-emerald-950/40 border border-emerald-800/40 flex items-center justify-center text-xl shadow-lg">
-              🎓
+          <div className="stat-card">
+            <div className="stat-icon" style={{ color: '#00C896' }}>
+              <CheckCircle style={{ width: 20, height: 20 }} />
             </div>
             <div>
-              <div className="text-lg font-bold text-slate-100 font-display leading-tight">
-                {userSkills.filter(s => s.level >= 4).length} Mastery
-              </div>
-              <div className="text-[11px] text-slate-400 mt-1 font-sans">
-                High Proficiency Skills (Lv.4+)
-              </div>
+              <div className="stat-value">{userSkills.filter(s => s.level >= 4).length} Skills</div>
+              <div className="stat-label">Proficient (Lv. 4+)</div>
             </div>
           </div>
 
-          <div className="glass-panel p-5 rounded-xl flex items-center gap-4 transition-all duration-200">
-            <div className="w-12 h-12 rounded-xl bg-amber-950/40 border border-amber-800/40 flex items-center justify-center text-xl shadow-lg">
-              🏆
+          <div className="stat-card">
+            <div className="stat-icon" style={{ color: '#FBBF24' }}>
+              <Award style={{ width: 20, height: 20 }} />
             </div>
             <div>
-              <div className="text-lg font-bold text-slate-100 font-display leading-tight">
-                {userProfile.badgesEarned} Badges
-              </div>
-              <div className="text-[11px] text-slate-400 mt-1 font-sans">
-                Achievements Unlocked
-              </div>
+              <div className="stat-value">{userProfile.badgesEarned} Badges</div>
+              <div className="stat-label">Achievements Unlocked</div>
             </div>
           </div>
         </div>
 
       </div>
 
-      {/* Active Quests (Roadmap Steps Preview) */}
-      <div className="glass-panel p-6 rounded-2xl">
-        <div className="flex items-center justify-between border-b border-gold-light/10 pb-4 mb-4">
-          <h3 className="text-sm font-bold tracking-wider text-slate-100 font-display flex items-center gap-2">
-            <Zap className="w-4 h-4 text-gold" /> ACTIVE QUEST LOG
-          </h3>
-          <button 
+      {/* Action Roadmap Preview */}
+      <div className="surface" style={{ padding: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: '0.875rem' }}>
+          <div>
+            <h3 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.125rem', fontWeight: 600, color: '#F1F2F4' }}>
+              Priority Learning Path
+            </h3>
+            <p style={{ fontSize: '0.75rem', color: '#8A8FA8', marginTop: '0.2rem' }}>Key requirements for {selectedRole}</p>
+          </div>
+          <button
             onClick={() => setPage('roadmap')}
-            className="text-xs font-bold text-gold hover:text-gold-light hover:underline font-display"
+            className="btn-ghost"
+            style={{ fontSize: '0.75rem', padding: '0.4rem 0.85rem' }}
           >
-            VIEW DETAILED ROADMAP →
+            Full Roadmap <ArrowUpRight style={{ width: 13, height: 13 }} />
           </button>
         </div>
 
-        <div className="space-y-4">
-          {/* We display missing skills as roadmap steps */}
-          {roleInfo.requirements.slice(0, 3).map((req, idx) => {
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+          {roleInfo.requirements.slice(0, 4).map((req, idx) => {
             const userSkill = userSkills.find(s => s.name === req.skill);
             const level = userSkill ? userSkill.level : 0;
             const isCompleted = level >= 4;
             const inProgress = level > 0 && level < 4;
 
             return (
-              <div 
+              <div
                 key={req.skill}
-                className={`p-4 rounded-xl border transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-                  isCompleted 
-                    ? 'bg-emerald-950/5 border-emerald-900/20' 
-                    : inProgress 
-                      ? 'bg-cyan-950/5 border-cyan-900/20' 
-                      : 'bg-slate-900/20 border-slate-800/40'
-                }`}
+                className="surface-2"
+                style={{ padding: '1rem 1.25rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', borderLeft: `3px solid ${isCompleted ? '#00C896' : inProgress ? '#60A5FA' : 'rgba(255,255,255,0.1)'}` }}
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-display text-xs ${
-                    isCompleted 
-                      ? 'bg-emerald-500/20 text-emerald-400' 
-                      : inProgress 
-                        ? 'bg-cyan-500/20 text-cyan-400' 
-                        : 'bg-slate-800 text-slate-400'
-                  }`}>
-                    {idx + 1}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyCenter: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', fontWeight: 600, color: '#8A8FA8', flexShrink: 0 }}>
+                    0{idx + 1}
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                      Master {req.skill}
-                      {isCompleted && <span className="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-display">Conquered</span>}
-                      {inProgress && <span className="text-[9px] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-display">In Progress</span>}
-                    </h4>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Importance Rating: {'★'.repeat(req.importance)}{'☆'.repeat(5 - req.importance)}
-                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: '0.9375rem', color: '#F1F2F4' }}>
+                        {req.skill}
+                      </span>
+                      {isCompleted && <span className="badge badge-accent">Mastered</span>}
+                      {inProgress && <span className="badge badge-warn">In Progress</span>}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#4B5068', marginTop: '0.2rem' }}>
+                      Importance: {'★'.repeat(req.importance)}{'☆'.repeat(5 - req.importance)}
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <span className="text-xs text-slate-400 block">Your Rating</span>
-                    <span className="text-sm font-bold text-slate-100 block font-display">{level}/5</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: '0.675rem', color: '#4B5068', display: 'block' }}>Current Level</span>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: '0.875rem', color: '#F1F2F4' }}>{level}/5</span>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setPage('skills')}
-                    className="bg-gold hover:bg-gold-light text-bg-primary px-3 py-1.5 rounded-lg text-xs font-bold font-display transition-all"
+                    className="btn-ghost"
+                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
                   >
-                    Level Up
+                    Update
                   </button>
                 </div>
               </div>

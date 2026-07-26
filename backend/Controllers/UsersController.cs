@@ -39,7 +39,9 @@ public class UsersController : ControllerBase
             BadgesEarned = user.UserAchievements.Count,
             Bio = user.Bio,
             GithubUrl = user.GithubUrl,
-            LinkedinUrl = user.LinkedinUrl
+            LinkedinUrl = user.LinkedinUrl,
+            IsAdmin = user.IsAdmin,
+            Tokens = user.Tokens
         });
     }
 
@@ -74,7 +76,9 @@ public class UsersController : ControllerBase
             BadgesEarned = dto.BadgesEarned,
             Bio = user.Bio,
             GithubUrl = user.GithubUrl,
-            LinkedinUrl = user.LinkedinUrl
+            LinkedinUrl = user.LinkedinUrl,
+            IsAdmin = user.IsAdmin,
+            Tokens = user.Tokens
         });
     }
 

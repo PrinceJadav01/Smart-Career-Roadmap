@@ -1,17 +1,40 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace SmartCareerRoadmap.API.DTOs;
 
 // ── Auth ───────────────────────────────────────────────────
 public class LoginRequest
 {
+    [Required(ErrorMessage = "Email is required.")]
+    [EmailAddress(ErrorMessage = "Invalid email format.")]
     public string Email { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Password is required.")]
     public string Password { get; set; } = string.Empty;
 }
 
 public class RegisterRequest
 {
+    [Required(ErrorMessage = "Full name is required.")]
+    [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Email is required.")]
+    [EmailAddress(ErrorMessage = "Invalid email format.")]
     public string Email { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Password is required.")]
+    [MinLength(6, ErrorMessage = "Password must be at least 6 characters.")]
     public string Password { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Confirm password is required.")]
+    public string ConfirmPassword { get; set; } = string.Empty;
+
+    [Phone(ErrorMessage = "Invalid phone number.")]
+    public string? PhoneNumber { get; set; }
+
+    public string? EducationLevel { get; set; }
+    public string? FieldOfStudy { get; set; }
 }
 
 public class AuthResponse
@@ -34,6 +57,11 @@ public class UserDto
     public string? Bio { get; set; }
     public string? GithubUrl { get; set; }
     public string? LinkedinUrl { get; set; }
+    public bool IsAdmin { get; set; }
+    public int Tokens { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? EducationLevel { get; set; }
+    public string? FieldOfStudy { get; set; }
 }
 
 public class UserUpdateRequest
@@ -56,6 +84,12 @@ public class SkillDto
 public class SkillUpdateRequest
 {
     public int Level { get; set; }
+}
+
+public class SkillCreateRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
 }
 
 // ── Careers ────────────────────────────────────────────────
@@ -104,6 +138,16 @@ public class ResourceDto
 public class ResourceProgressRequest
 {
     public bool IsCompleted { get; set; }
+}
+
+public class ResourceCreateRequest
+{
+    public string Title { get; set; } = string.Empty;
+    public string Platform { get; set; } = string.Empty;
+    public string Url { get; set; } = string.Empty;
+    public string? Duration { get; set; }
+    public string? Cost { get; set; }
+    public string SkillName { get; set; } = string.Empty;
 }
 
 // ── Achievements ───────────────────────────────────────────
