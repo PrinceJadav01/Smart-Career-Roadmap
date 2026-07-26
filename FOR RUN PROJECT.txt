@@ -1,6 +1,11 @@
 ======================================================
-  QUICK COMMANDS TO RUN THE PROJECT (FROM CMD)
+  QUICK COMMANDS TO DOWNLOAD & RUN THE PROJECT (CMD)
 ======================================================
+
+0. DOWNLOAD / CLONE PROJECT FROM GITHUB:
+   git clone https://github.com/SavanChauhan87/Smart-Career-Roadmap.git
+   cd Smart-Career-Roadmap
+   git checkout feature/frontend-prototype
 
 For detailed beginner setup, see: HOW_TO_RUN_PROJECT.txt
 
