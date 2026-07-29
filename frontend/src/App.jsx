@@ -856,11 +856,7 @@ function App() {
         <div style={{ overflowY: 'auto', flex: 1, padding: '1.5rem 1.25rem' }}>
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2.5rem', paddingLeft: '0.5rem' }}>
-            <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="32" height="32" rx="8" fill="#00C896" fillOpacity="0.15" />
-              <path d="M8 24L16 8L24 24" stroke="#00C896" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M10.5 19H21.5" stroke="#00C896" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+            <img src="/logo.png" alt="SkillSathi Logo" style={{ width: 36, height: 36, objectFit: 'contain' }} />
             <div>
               <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '0.975rem', color: '#F1F2F4', lineHeight: 1.2 }}>SkillSathi</div>
               <div style={{ fontSize: '0.675rem', color: '#4B5068', marginTop: '0.15rem', letterSpacing: '0.04em' }}>Smart Career Roadmap</div>

@@ -154,20 +154,26 @@ CREATE TABLE quest_submissions (
     CONSTRAINT unique_user_quest UNIQUE (user_id, weekly_quest_id)
 );
 
--- Redeemable Rewards Catalog (resume review slots, downloadable guides, etc.)
+-- Redeemable Rewards Catalog (Water bottles, T-Shirts, Pens, Resume Reviews, etc.)
 CREATE TABLE redeemable_rewards (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(200) NOT NULL,
     description TEXT NOT NULL,
     token_cost INT NOT NULL,
-    reward_url VARCHAR(255) NOT NULL
+    image_url TEXT DEFAULT '',
+    reward_url VARCHAR(255) DEFAULT ''
 );
 
--- User Redemptions list
+-- User Redemptions & Order Delivery Tracking list
 CREATE TABLE user_redemptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id VARCHAR(50) NOT NULL,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     reward_id UUID REFERENCES redeemable_rewards(id) ON DELETE CASCADE,
+    full_name VARCHAR(150) NOT NULL DEFAULT '',
+    phone_number VARCHAR(20) NOT NULL DEFAULT '',
+    shipping_address TEXT NOT NULL DEFAULT '',
+    status VARCHAR(50) DEFAULT 'Waiting', -- 'Waiting', 'Dispatched', 'Delivered'
     redeemed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -383,10 +389,12 @@ INSERT INTO quest_questions (id, weekly_quest_id, question_text, option_a, optio
 ('e0000000-0000-0000-0000-000000000003', 'd0000000-0000-0000-0000-000000000001', 'Inside which HTML element do we put JavaScript code?', '<scripting>', '<javascript>', '<js>', '<script>', 'D', 25),
 ('e0000000-0000-0000-0000-000000000004', 'd0000000-0000-0000-0000-000000000001', 'How do you create a function in JavaScript?', 'function myFunction()', 'function:myFunction()', 'function = myFunction()', 'new function myFunction()', 'A', 25);
 
--- Insert Seed Shop Rewards
-INSERT INTO redeemable_rewards (id, title, description, token_cost, reward_url) VALUES
-('f0000000-0000-0000-0000-000000000001', 'Professional Resume Review Slot', 'Get a 30-minute personalized review session for your tech resume from industry mentors.', 100, 'https://calendly.com/skillsathi-reviews/resume-critique'),
-('f0000000-0000-0000-0000-000000000002', 'Vanguard Interview Preparation Handbook (PDF)', 'An extensive collection of top-level technical interview questions, system design guidelines, and soft-skill prep tips.', 50, 'https://skillsathi.org/downloads/vanguard_interview_prep.pdf');
+-- Insert Seed Shop Rewards (Physical Merch & Digital Benefits)
+INSERT INTO redeemable_rewards (id, title, description, token_cost, image_url, reward_url) VALUES
+('f0000000-0000-0000-0000-000000000001', 'Smart Career Thermal Water Bottle', 'Matte black 750ml stainless steel insulated thermal bottle with laser-engraved Smart Career Roadmap logo.', 150, 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80', ''),
+('f0000000-0000-0000-0000-000000000002', 'Full-Stack Developer Premium T-Shirt', '100% combed cotton heavy-weight black tee with minimal futuristic code graphic. Choose size at shipping.', 200, 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80', ''),
+('f0000000-0000-0000-0000-000000000003', 'Executive Matte Pen & Laptop Sticker Pack', 'Metallic gel ink rollerball pen + set of 12 waterproof tech stickers (React, Docker, C#, Python, Linux).', 80, 'https://images.unsplash.com/photo-1585336261026-6757c54e3ed7?auto=format&fit=crop&w=600&q=80', ''),
+('f0000000-0000-0000-0000-000000000004', '1-on-1 Expert Resume Review Slot', 'Get a 30-minute personalized review session for your tech resume from senior engineering mentors.', 100, '', 'https://calendly.com/skillsathi-reviews/resume-critique');
 
 -- Insert Seed Admin Audit Logs
 INSERT INTO admin_audit_logs (id, admin_id, admin_name, action, details, timestamp) VALUES

@@ -269,7 +269,7 @@ const Profile = ({
         >
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div>
-              <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>📜</div>
+              <img src="/logo.png" alt="SkillSathi Logo" style={{ width: 54, height: 54, objectFit: 'contain', margin: '0 auto 0.5rem' }} />
               <h2 className="cert-title" style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: '#00C896', letterSpacing: '0.05em' }}>
                 CERTIFICATE OF ACCOMPLISHMENT
               </h2>

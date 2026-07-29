@@ -97,7 +97,18 @@ public class ResourcesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateResource([FromBody] ResourceCreateRequest req)
     {
-        var skill = await _db.Skills.FirstOrDefaultAsync(s => s.Name == req.SkillName);
+        Models.Skill? skill = null;
+        if (req.SkillId.HasValue && req.SkillId.Value != Guid.Empty)
+        {
+            skill = await _db.Skills.FindAsync(req.SkillId.Value);
+        }
+
+        if (skill == null && !string.IsNullOrWhiteSpace(req.SkillName))
+        {
+            var searchName = req.SkillName.Trim().ToLower();
+            skill = await _db.Skills.FirstOrDefaultAsync(s => s.Name.ToLower() == searchName);
+        }
+
         if (skill == null)
             return BadRequest(new { message = "Skill not found." });
 
@@ -115,7 +126,17 @@ public class ResourcesController : ControllerBase
         _db.LearningResources.Add(resource);
         await _db.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetAll), new { id = resource.Id }, resource);
+        return Ok(new ResourceDto
+        {
+            Id = resource.Id,
+            Title = resource.Title,
+            Platform = resource.Platform,
+            Url = resource.Url,
+            Duration = resource.Duration,
+            Cost = resource.Cost,
+            SkillName = skill.Name,
+            IsCompleted = false
+        });
     }
 
     /// <summary>DELETE /api/resources/{id} — [Admin] Delete a resource</summary>

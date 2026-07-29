@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShieldAlert, Plus, Trash2, Search, Eye, ArrowRight } from 'lucide-react';
+import { ShieldAlert, Plus, Trash2, Search, Eye, ArrowRight, Upload, Image, X } from 'lucide-react';
 import * as api from '../services/api';
 import AdminDashboard from './AdminDashboard';
 import UserDetailDrawer from './UserDetailDrawer';
@@ -27,7 +27,11 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
 
   // Tab 4: Reward Merchant
   const [rewards, setRewards] = useState([]);
-  const [newReward, setNewReward] = useState({ title: '', description: '', tokenCost: 50, rewardUrl: '' });
+  const [newReward, setNewReward] = useState({ title: '', description: '', tokenCost: 50, imageUrl: '', rewardUrl: '' });
+
+  // Tab 5: Reward Orders Management
+  const [orders, setOrders] = useState([]);
+  const [orderFilter, setOrderFilter] = useState('All');
 
   useEffect(() => {
     if (currentUser?.isAdmin) {
@@ -53,9 +57,11 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
       } else if (activeTab === 'quests') {
         const data = await api.getAdminQuests();
         setQuests(data);
-      } else if (activeTab === 'rewards') {
+      } else if (activeTab === 'rewards' || activeTab === 'orders') {
         const res = await api.getRewardsCatalog();
         setRewards(res.catalog || []);
+        const ordersData = await api.getAdminRewardOrders();
+        setOrders(ordersData || []);
       }
     } catch (err) {
       console.error(err);
@@ -184,12 +190,12 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
     }
   };
 
-  // ── Tab 4 Handlers ──
+  // ── Tab 4 & 5 Handlers ──
   const handleCreateReward = async (e) => {
     e.preventDefault();
     try {
       await api.createAdminReward(newReward);
-      setNewReward({ title: '', description: '', tokenCost: 50, rewardUrl: '' });
+      setNewReward({ title: '', description: '', tokenCost: 50, imageUrl: '', rewardUrl: '' });
       fetchData();
     } catch (err) {
       alert(err.message);
@@ -203,6 +209,59 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
       fetchData();
     } catch (err) {
       alert(err.message);
+    }
+  };
+
+  const handleImageFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file (PNG, JPG, JPEG, WEBP, SVG).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = document.createElement('img');
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        setNewReward(prev => ({ ...prev, imageUrl: compressedDataUrl }));
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
+    try {
+      await api.updateOrderStatus(orderId, newStatus);
+      fetchData();
+    } catch (err) {
+      alert(err.message || 'Failed to update status');
     }
   };
 
@@ -633,6 +692,49 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
                 />
               </div>
               <div>
+                <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block mb-1">
+                  Upload Reward Image from Device
+                </label>
+
+                {newReward.imageUrl ? (
+                  <div className="relative w-full h-36 rounded border border-blue-500/50 bg-zinc-950 overflow-hidden flex items-center justify-center mb-2">
+                    <img src={newReward.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setNewReward(prev => ({ ...prev, imageUrl: '' }))}
+                      className="absolute top-2 right-2 bg-red-600/80 hover:bg-red-500 text-white p-1 rounded-full text-xs transition-colors cursor-pointer"
+                      title="Remove image"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : null}
+
+                <div className="flex gap-2">
+                  <label className="flex-1 flex items-center justify-center gap-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-600/40 rounded px-3 py-2 text-xs font-semibold cursor-pointer transition-colors">
+                    <Upload className="w-4 h-4" />
+                    Browse Image from Device
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-2">
+                  <span className="text-[9px] text-zinc-500 block mb-1">Or paste Web Image URL:</span>
+                  <input
+                    type="url"
+                    placeholder="https://images.unsplash.com/... or image path"
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-1.5 text-[11px] text-white placeholder:text-zinc-650 focus:outline-none focus:border-blue-600"
+                    value={newReward.imageUrl || ''}
+                    onChange={e => setNewReward({ ...newReward, imageUrl: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div>
                 <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block mb-1">Token Cost</label>
                 <input
                   type="number" required
@@ -641,9 +743,9 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
                 />
               </div>
               <div>
-                <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block mb-1">Voucher Access / Booking URL</label>
+                <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block mb-1">Voucher Access / Booking URL (Optional)</label>
                 <input
-                  type="url" placeholder="https://calendly.com/..." required
+                  type="url" placeholder="https://..."
                   className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-xs text-white focus:outline-none"
                   value={newReward.rewardUrl} onChange={e => setNewReward({...newReward, rewardUrl: e.target.value})}
                 />
@@ -665,21 +767,136 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
                   <button onClick={() => handleDeleteReward(r.id)} className="absolute right-3 top-3 text-red-400 hover:text-red-300 cursor-pointer">
                     <Trash2 className="w-4 h-4" />
                   </button>
-                  <div className="space-y-1">
+                  <div className="space-y-2">
+                    {r.imageUrl && (
+                      <img src={r.imageUrl} alt={r.title} className="w-full h-28 object-cover rounded border border-zinc-800" />
+                    )}
                     <h3 className="text-xs font-bold text-zinc-100 pr-6">{r.title}</h3>
                     <p className="text-[11px] text-zinc-500 leading-relaxed">{r.description}</p>
                   </div>
                   <div className="flex justify-between items-center border-t border-zinc-800 pt-3">
-                    <span className="text-xs font-bold text-blue-400">{r.tokenCost} Tokens</span>
-                    <a
-                      href={r.rewardUrl} target="_blank" rel="noopener noreferrer"
-                      className="text-[10px] text-zinc-550 hover:text-blue-400 flex items-center gap-1 transition-colors"
-                    >
-                      Verify Link <ArrowRight className="w-3 h-3" />
-                    </a>
+                    <span className="text-xs font-bold text-blue-400">🪙 {r.tokenCost} Tokens</span>
+                    {r.rewardUrl && (
+                      <a
+                        href={r.rewardUrl} target="_blank" rel="noopener noreferrer"
+                        className="text-[10px] text-zinc-500 hover:text-blue-400 flex items-center gap-1 transition-colors"
+                      >
+                        Verify Link <ArrowRight className="w-3 h-3" />
+                      </a>
+                    )}
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Reward Orders & Delivery Fulfillment Module */}
+      {activeTab === 'orders' && (
+        <div className="space-y-4 text-zinc-100">
+          <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-lg space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+              <div>
+                <h2 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">
+                  User Reward Orders & Delivery Fulfillment
+                </h2>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Manage physical reward deliveries, view recipient shipping addresses, and update order status (Waiting, Dispatched, Delivered).
+                </p>
+              </div>
+
+              {/* Status Filter */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-500 font-semibold">Filter:</span>
+                {['All', 'Waiting', 'Dispatched', 'Delivered'].map(status => (
+                  <button
+                    key={status}
+                    onClick={() => setOrderFilter(status)}
+                    className={`px-3 py-1 rounded text-xs font-medium cursor-pointer transition-colors ${
+                      orderFilter === status
+                        ? 'bg-blue-600/30 text-blue-400 border border-blue-500/40'
+                        : 'bg-zinc-950 text-zinc-400 border border-zinc-800 hover:text-zinc-200'
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Orders List Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-zinc-800 text-[10px] text-zinc-500 uppercase tracking-wider">
+                    <th className="py-2.5 px-3">Order ID</th>
+                    <th className="py-2.5 px-3">User / Email</th>
+                    <th className="py-2.5 px-3">Reward Item</th>
+                    <th className="py-2.5 px-3">Shipping Address & Contact</th>
+                    <th className="py-2.5 px-3">Redeemed At</th>
+                    <th className="py-2.5 px-3">Delivery Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/60">
+                  {orders
+                    .filter(o => orderFilter === 'All' || o.status?.toLowerCase() === orderFilter.toLowerCase())
+                    .map(order => (
+                      <tr key={order.id} className="hover:bg-zinc-950/40 transition-colors">
+                        <td className="py-3 px-3 font-mono font-bold text-emerald-400">
+                          {order.orderId || 'ORD-REQ'}
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="font-semibold text-zinc-200">{order.userName}</div>
+                          <div className="text-[10px] text-zinc-500">{order.userEmail}</div>
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-2">
+                            {order.rewardImageUrl && (
+                              <img src={order.rewardImageUrl} alt="" className="w-8 h-8 rounded object-cover border border-zinc-800 shrink-0" />
+                            )}
+                            <div>
+                              <div className="font-semibold text-zinc-200">{order.rewardTitle}</div>
+                              <div className="text-[10px] text-emerald-400 font-mono">🪙 {order.tokenCost} Tokens</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 max-w-xs">
+                          <div className="font-medium text-zinc-300">{order.fullName} ({order.phoneNumber})</div>
+                          <div className="text-[11px] text-zinc-500 truncate" title={order.shippingAddress}>
+                            {order.shippingAddress}
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-zinc-500">
+                          {new Date(order.redeemedAt).toLocaleDateString()}
+                        </td>
+                        <td className="py-3 px-3">
+                          <select
+                            value={order.status || 'Waiting'}
+                            onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                            className={`bg-zinc-950 border rounded px-2.5 py-1.5 text-xs font-bold focus:outline-none cursor-pointer ${
+                              order.status === 'Delivered'
+                                ? 'text-emerald-400 border-emerald-600/40 bg-emerald-950/20'
+                                : order.status === 'Dispatched'
+                                ? 'text-blue-400 border-blue-600/40 bg-blue-950/20'
+                                : 'text-amber-400 border-amber-600/40 bg-amber-950/20'
+                            }`}
+                          >
+                            <option value="Waiting">🟡 Waiting</option>
+                            <option value="Dispatched">🔵 Dispatched</option>
+                            <option value="Delivered">🟢 Delivered</option>
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+
+              {orders.length === 0 && (
+                <div className="text-center py-8 text-zinc-500 text-xs">
+                  No reward orders found.
+                </div>
+              )}
             </div>
           </div>
         </div>

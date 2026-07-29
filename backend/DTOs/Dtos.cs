@@ -142,6 +142,7 @@ public class ResourceProgressRequest
 
 public class ResourceCreateRequest
 {
+    public Guid? SkillId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Platform { get; set; } = string.Empty;
     public string Url { get; set; } = string.Empty;

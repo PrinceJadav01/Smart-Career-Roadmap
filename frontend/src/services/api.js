@@ -298,9 +298,20 @@ export async function getRewardsCatalog() {
   return request('/rewards');
 }
 
-export async function redeemReward(rewardId) {
+export async function redeemReward(rewardId, shippingData = {}) {
   return request(`/rewards/redeem/${rewardId}`, {
     method: 'POST',
+    body: JSON.stringify(shippingData),
   });
 }
 
+export async function getAdminRewardOrders() {
+  return request('/admin/orders');
+}
+
+export async function updateOrderStatus(orderId, status) {
+  return request(`/admin/orders/${orderId}/status`, {
+    method: 'PUT',
+    body: JSON.stringify({ status }),
+  });
+}

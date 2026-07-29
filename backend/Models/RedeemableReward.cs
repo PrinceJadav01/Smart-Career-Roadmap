@@ -20,6 +20,9 @@ public class RedeemableReward
     [Column("token_cost")]
     public int TokenCost { get; set; }
 
+    [Column("image_url")]
+    public string ImageUrl { get; set; } = string.Empty;
+
     [Column("reward_url")]
     public string RewardUrl { get; set; } = string.Empty;
 }

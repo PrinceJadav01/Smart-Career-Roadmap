@@ -437,6 +437,7 @@ public class AdminController : ControllerBase
         existing.Title = reward.Title;
         existing.Description = reward.Description;
         existing.TokenCost = reward.TokenCost;
+        existing.ImageUrl = reward.ImageUrl;
         existing.RewardUrl = reward.RewardUrl;
 
         await _db.SaveChangesAsync();
@@ -462,6 +463,74 @@ public class AdminController : ControllerBase
 
         return Ok(new { message = "Reward deleted successfully." });
     }
+
+    // ── Reward Orders & Delivery Fulfillment Module ──
+
+    [HttpGet("orders")]
+    public async Task<IActionResult> GetRewardOrders()
+    {
+        var admin = await GetRequestingAdmin();
+        if (admin == null) return Forbid("Admin permissions required.");
+
+        var redemptions = await _db.UserRedemptions
+            .Include(ur => ur.User)
+            .Include(ur => ur.Reward)
+            .OrderByDescending(ur => ur.RedeemedAt)
+            .ToListAsync();
+
+        var result = redemptions.Select(ur => new
+        {
+            ur.Id,
+            ur.OrderId,
+            ur.UserId,
+            UserName = ur.User?.Name ?? "Anonymous",
+            UserEmail = ur.User?.Email ?? "N/A",
+            ur.RewardId,
+            RewardTitle = ur.Reward?.Title ?? "Custom Item",
+            RewardImageUrl = ur.Reward?.ImageUrl ?? "",
+            TokenCost = ur.Reward?.TokenCost ?? 0,
+            ur.FullName,
+            ur.PhoneNumber,
+            ur.ShippingAddress,
+            ur.Status,
+            ur.RedeemedAt
+        });
+
+        return Ok(result);
+    }
+
+    [HttpPut("orders/{id:guid}/status")]
+    public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] OrderStatusUpdateRequest req)
+    {
+        var admin = await GetRequestingAdmin();
+        if (admin == null) return Forbid("Admin permissions required.");
+
+        var redemption = await _db.UserRedemptions
+            .Include(ur => ur.Reward)
+            .Include(ur => ur.User)
+            .FirstOrDefaultAsync(ur => ur.Id == id);
+
+        if (redemption == null) return NotFound("Order not found.");
+
+        string oldStatus = redemption.Status;
+        redemption.Status = req.Status;
+        await _db.SaveChangesAsync();
+
+        await LogAdminAction(admin, "ORDER_STATUS_UPDATE", $"Updated Order #{redemption.OrderId} status from '{oldStatus}' to '{req.Status}'.");
+
+        return Ok(new
+        {
+            message = $"Order status updated to '{req.Status}'.",
+            redemption.Id,
+            redemption.OrderId,
+            redemption.Status
+        });
+    }
+}
+
+public class OrderStatusUpdateRequest
+{
+    public string Status { get; set; } = "Waiting";
 }
 
 public class TokenUpdateRequest

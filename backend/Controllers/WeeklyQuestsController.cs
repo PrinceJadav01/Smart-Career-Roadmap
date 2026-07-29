@@ -27,18 +27,141 @@ public class WeeklyQuestsController : ControllerBase
             .FirstOrDefaultAsync();
 
         if (activeQuest == null)
-            return NotFound("No active quest this week.");
+        {
+            activeQuest = new WeeklyQuest
+            {
+                Id = Guid.NewGuid(),
+                Title = "Full-Stack & System Design Sprint",
+                Description = "Test your software engineering knowledge across Data Structures, Web Architecture, and REST APIs. Complete for token rewards!",
+                EndDate = DateTime.UtcNow.AddDays(7),
+                RewardTokens = 150,
+                Questions = new List<QuestQuestion>
+                {
+                    new QuestQuestion
+                    {
+                        Id = Guid.NewGuid(),
+                        QuestionText = "Which data structure uses LIFO (Last In First Out) ordering?",
+                        OptionA = "Queue",
+                        OptionB = "Stack",
+                        OptionC = "Linked List",
+                        OptionD = "Binary Tree",
+                        CorrectOption = "B",
+                        Points = 10
+                    },
+                    new QuestQuestion
+                    {
+                        Id = Guid.NewGuid(),
+                        QuestionText = "What HTTP status code represents a successful resource creation in REST APIs?",
+                        OptionA = "200 OK",
+                        OptionB = "201 Created",
+                        OptionC = "204 No Content",
+                        OptionD = "400 Bad Request",
+                        CorrectOption = "B",
+                        Points = 10
+                    },
+                    new QuestQuestion
+                    {
+                        Id = Guid.NewGuid(),
+                        QuestionText = "What is the worst-case time complexity of QuickSort?",
+                        OptionA = "O(n)",
+                        OptionB = "O(n log n)",
+                        OptionC = "O(n²)",
+                        OptionD = "O(1)",
+                        CorrectOption = "C",
+                        Points = 15
+                    },
+                    new QuestQuestion
+                    {
+                        Id = Guid.NewGuid(),
+                        QuestionText = "In Relational Databases, what key uniquely identifies a row in a table?",
+                        OptionA = "Foreign Key",
+                        OptionB = "Index Key",
+                        OptionC = "Primary Key",
+                        OptionD = "Composite Foreign Key",
+                        CorrectOption = "C",
+                        Points = 10
+                    }
+                }
+            };
+            _db.WeeklyQuests.Add(activeQuest);
+            await _db.SaveChangesAsync();
+        }
+        else if (activeQuest.Questions.Count == 0)
+        {
+            var sampleQuestions = new List<QuestQuestion>
+            {
+                new QuestQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    WeeklyQuestId = activeQuest.Id,
+                    QuestionText = "Which data structure uses LIFO (Last In First Out) ordering?",
+                    OptionA = "Queue",
+                    OptionB = "Stack",
+                    OptionC = "Linked List",
+                    OptionD = "Binary Tree",
+                    CorrectOption = "B",
+                    Points = 10
+                },
+                new QuestQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    WeeklyQuestId = activeQuest.Id,
+                    QuestionText = "What HTTP status code represents a successful resource creation in REST APIs?",
+                    OptionA = "200 OK",
+                    OptionB = "201 Created",
+                    OptionC = "204 No Content",
+                    OptionD = "400 Bad Request",
+                    CorrectOption = "B",
+                    Points = 10
+                },
+                new QuestQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    WeeklyQuestId = activeQuest.Id,
+                    QuestionText = "What is the worst-case time complexity of QuickSort?",
+                    OptionA = "O(n)",
+                    OptionB = "O(n log n)",
+                    OptionC = "O(n²)",
+                    OptionD = "O(1)",
+                    CorrectOption = "C",
+                    Points = 15
+                },
+                new QuestQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    WeeklyQuestId = activeQuest.Id,
+                    QuestionText = "In Relational Databases, what key uniquely identifies a row in a table?",
+                    OptionA = "Foreign Key",
+                    OptionB = "Index Key",
+                    OptionC = "Primary Key",
+                    OptionD = "Composite Foreign Key",
+                    CorrectOption = "C",
+                    Points = 10
+                }
+            };
+            _db.QuestQuestions.AddRange(sampleQuestions);
+            await _db.SaveChangesAsync();
+            activeQuest.Questions = sampleQuestions;
+        }
 
         // Check if user already submitted
         var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         bool alreadySubmitted = false;
         QuestSubmission? userSubmission = null;
+        int userRank = 0;
 
         if (Guid.TryParse(userIdStr, out var userId))
         {
             userSubmission = await _db.QuestSubmissions
                 .FirstOrDefaultAsync(s => s.UserId == userId && s.WeeklyQuestId == activeQuest.Id);
             alreadySubmitted = userSubmission != null;
+
+            if (userSubmission != null)
+            {
+                userRank = await _db.QuestSubmissions
+                    .Where(s => s.WeeklyQuestId == activeQuest.Id)
+                    .CountAsync(s => s.Score > userSubmission.Score || (s.Score == userSubmission.Score && s.DurationSeconds < userSubmission.DurationSeconds)) + 1;
+            }
         }
 
         // Return questions without the correct option to prevent cheating
@@ -62,7 +185,12 @@ public class WeeklyQuestsController : ControllerBase
             activeQuest.RewardTokens,
             Questions = questionsPayload,
             AlreadySubmitted = alreadySubmitted,
-            UserSubmission = userSubmission != null ? new { userSubmission.Score, userSubmission.DurationSeconds, userSubmission.TokensEarned } : null
+            UserSubmission = userSubmission != null ? new { 
+                userSubmission.Score, 
+                userSubmission.DurationSeconds, 
+                userSubmission.TokensEarned,
+                Rank = userRank
+            } : null
         });
     }
 
@@ -86,7 +214,7 @@ public class WeeklyQuestsController : ControllerBase
         if (existingSubmission)
             return BadRequest("You have already submitted this week's quest.");
 
-        // Calculate score
+        // Calculate score based on correct answers
         int totalScore = 0;
         int maxPossible = 0;
 
@@ -102,9 +230,18 @@ public class WeeklyQuestsController : ControllerBase
             }
         }
 
-        // Calculate token reward based on accuracy percentage
+        // Calculate base token reward based on accuracy percentage
         double accuracy = maxPossible > 0 ? (double)totalScore / maxPossible : 0;
-        int tokensEarned = (int)Math.Round(accuracy * quest.RewardTokens);
+        int baseTokens = (int)Math.Round(accuracy * quest.RewardTokens);
+
+        // Determine user rank based on (Score DESC, DurationSeconds ASC) to assign Top 3 Bonus Tokens
+        var betterSubmissionsCount = await _db.QuestSubmissions
+            .Where(s => s.WeeklyQuestId == req.WeeklyQuestId)
+            .CountAsync(s => s.Score > totalScore || (s.Score == totalScore && s.DurationSeconds < req.DurationSeconds));
+
+        int rank = betterSubmissionsCount + 1;
+        int bonusTokens = rank == 1 ? 50 : rank == 2 ? 30 : rank == 3 ? 15 : 0;
+        int totalTokensEarned = baseTokens + bonusTokens;
 
         // Save submission
         var submission = new QuestSubmission
@@ -115,18 +252,17 @@ public class WeeklyQuestsController : ControllerBase
             Score = totalScore,
             DurationSeconds = req.DurationSeconds,
             SubmittedAt = DateTime.UtcNow,
-            TokensEarned = tokensEarned
+            TokensEarned = totalTokensEarned
         };
 
         _db.QuestSubmissions.Add(submission);
 
-        // Add tokens to user account
+        // Add tokens & XP to user account
         var user = await _db.Users.FindAsync(userId);
         if (user != null)
         {
-            user.Tokens += tokensEarned;
-            // Also award some profile XP for completing weekly quests
-            user.Xp += totalScore * 2; // e.g. 100 points = 200 XP
+            user.Tokens += totalTokensEarned;
+            user.Xp += totalScore * 2;
             int maxXp = CalculateMaxXp(user.Level);
             while (user.Xp >= maxXp)
             {
@@ -142,7 +278,10 @@ public class WeeklyQuestsController : ControllerBase
         {
             Score = totalScore,
             MaxScore = maxPossible,
-            TokensEarned = tokensEarned,
+            TokensEarned = totalTokensEarned,
+            BaseTokens = baseTokens,
+            BonusTokens = bonusTokens,
+            Rank = rank,
             DurationSeconds = req.DurationSeconds
         });
     }
@@ -151,21 +290,30 @@ public class WeeklyQuestsController : ControllerBase
     [HttpGet("leaderboard/{questId:guid}")]
     public async Task<IActionResult> GetLeaderboard(Guid questId)
     {
+        // Sort by Score DESC (most correct answers first), then DurationSeconds ASC (fastest completion tie-breaker)
         var submissions = await _db.QuestSubmissions
             .Include(s => s.User)
             .Where(s => s.WeeklyQuestId == questId)
             .OrderByDescending(s => s.Score)
             .ThenBy(s => s.DurationSeconds)
+            .ThenBy(s => s.SubmittedAt)
             .Take(10)
             .ToListAsync();
 
-        var result = submissions.Select((s, index) => new
+        var result = submissions.Select((s, index) =>
         {
-            Rank = index + 1,
-            UserName = s.User?.Name ?? "Anonymous",
-            s.Score,
-            s.DurationSeconds,
-            s.SubmittedAt
+            int rank = index + 1;
+            int bonusTokens = rank == 1 ? 50 : rank == 2 ? 30 : rank == 3 ? 15 : 0;
+            return new
+            {
+                Rank = rank,
+                UserName = s.User?.Name ?? "Anonymous",
+                Score = s.Score,
+                DurationSeconds = s.DurationSeconds,
+                TokensEarned = s.TokensEarned,
+                BonusTokens = bonusTokens,
+                SubmittedAt = s.SubmittedAt
+            };
         });
 
         return Ok(result);

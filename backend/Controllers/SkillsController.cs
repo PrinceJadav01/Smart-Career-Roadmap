@@ -130,8 +130,16 @@ public class SkillsController : ControllerBase
         return maxXp;
     }
 
+    /// <summary>GET /api/skills — list all skills globally</summary>
+    [HttpGet("/api/skills")]
+    public async Task<IActionResult> GetAllSkills()
+    {
+        var skills = await _db.Skills.OrderBy(s => s.Category).ThenBy(s => s.Name).ToListAsync();
+        return Ok(skills);
+    }
+
     /// <summary>POST /api/skills — [Admin] Create a new skill</summary>
-    [HttpPost]
+    [HttpPost("/api/skills")]
     public async Task<IActionResult> CreateSkill([FromBody] SkillCreateRequest req)
     {
         var existingSkill = await _db.Skills.FirstOrDefaultAsync(s => s.Name.ToLower() == req.Name.ToLower());
@@ -158,7 +166,7 @@ public class SkillsController : ControllerBase
     }
 
     /// <summary>DELETE /api/skills/{id} — [Admin] Delete a skill</summary>
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("/api/skills/{id:guid}")]
     public async Task<IActionResult> DeleteSkill(Guid id)
     {
         var skill = await _db.Skills.FindAsync(id);

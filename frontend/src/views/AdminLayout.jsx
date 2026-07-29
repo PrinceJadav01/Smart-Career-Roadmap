@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  LayoutDashboard, Users, BookOpen, Zap, Gift,
+  LayoutDashboard, Users, BookOpen, Zap, Gift, PackageCheck,
   Shield, ChevronRight, LogOut, Terminal, Menu, X,
   Bell, Settings, ChevronDown
 } from 'lucide-react';
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { id: 'skills',    label: 'Skills & Courses',  icon: BookOpen        },
   { id: 'quests',    label: 'Weekly Quests',     icon: Zap             },
   { id: 'rewards',   label: 'Reward Catalog',    icon: Gift            },
+  { id: 'orders',    label: 'Reward Orders',     icon: PackageCheck    },
 ];
 
 export default function AdminLayout({ adminUser, activeTab, onTabChange, onExitAdmin, children }) {
@@ -33,9 +34,7 @@ export default function AdminLayout({ adminUser, activeTab, onTabChange, onExitA
 
         {/* Brand */}
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-zinc-800">
-          <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
-            <Shield className="w-4 h-4 text-white" />
-          </div>
+          <img src="/logo.png" alt="SkillSathi Logo" className="w-8 h-8 object-contain shrink-0" />
           <div className="leading-tight">
             <span className="text-xs font-bold text-zinc-100 tracking-wide block">SKILLSATHI</span>
             <span className="text-[9px] text-zinc-500 uppercase tracking-widest block">Admin Console</span>

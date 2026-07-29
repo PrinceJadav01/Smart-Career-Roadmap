@@ -14,13 +14,9 @@ const EDUCATION_LEVELS = [
   'Other'
 ];
 
-// Shared LogoMark SVG
+// Shared LogoMark
 const LogoMark = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="32" height="32" rx="8" fill="#00C896" fillOpacity="0.15" />
-    <path d="M8 24L16 8L24 24" stroke="#00C896" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M10.5 19H21.5" stroke="#00C896" strokeWidth="2" strokeLinecap="round" />
-  </svg>
+  <img src="/logo.png" alt="SkillSathi Logo" style={{ width: 38, height: 38, objectFit: 'contain' }} />
 );
 
 export default function SignUp({ onRegisterSuccess, onSwitchToLogin }) {
