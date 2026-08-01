@@ -83,4 +83,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// ── Root Health Check Route ──────────────────────────────────
+app.MapGet("/", () => Results.Ok(new
+{
+    status = "online",
+    service = "SkillSathi Smart Career Roadmap Backend API",
+    timestamp = DateTime.UtcNow
+}));
+
 app.Run();
