@@ -4,6 +4,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using SmartCareerRoadmap.API.Data;
 
+// ── Disable Linux inotify file watchers for Render Cloud ──
+Environment.SetEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "true");
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Dynamic Port Binding for Render Cloud Hosting ─────────
