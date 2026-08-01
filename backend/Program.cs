@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ── Dynamic Port Binding for Render Cloud Hosting ─────────
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-builder.WebHost.UseUrls($"http://*:{port}");
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // ── Database (PostgreSQL via EF Core) ──────────────────────
 builder.Services.AddDbContext<AppDbContext>(options =>
