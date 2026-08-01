@@ -3,7 +3,8 @@
 // Centralized HTTP client for all backend communication
 // ═══════════════════════════════════════════════════════════
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const rawBase = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').trim();
+const API_BASE = rawBase.endsWith('/') ? rawBase.slice(0, -1) : rawBase;
 
 // ── Token Management ──────────────────────────────────────
 let authToken = localStorage.getItem('scr_token');
@@ -39,10 +40,16 @@ async function request(endpoint, options = {}) {
     ...options.headers,
   };
 
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch (netErr) {
+    console.error('Fetch error target:', `${API_BASE}${endpoint}`, netErr);
+    throw new Error('Unable to connect to live backend server. Please wait 10 seconds for cloud service to wake up.');
+  }
 
   if (!res.ok) {
     const errorBody = await res.json().catch(() => ({}));
