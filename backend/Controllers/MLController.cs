@@ -10,10 +10,18 @@ namespace SmartCareerRoadmap.API.Controllers;
 public class MLController : ControllerBase
 {
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _config;
 
-    public MLController(IHttpClientFactory httpClientFactory)
+    public MLController(IHttpClientFactory httpClientFactory, IConfiguration config)
     {
         _httpClientFactory = httpClientFactory;
+        _config = config;
+    }
+
+    private string GetMlUrl(string endpoint)
+    {
+        var baseUrl = _config["MlService:Url"] ?? "https://skillsathi-ml.onrender.com";
+        return $"{baseUrl.TrimEnd('/')}{endpoint}";
     }
 
     [HttpPost("predict-path")]
@@ -29,7 +37,7 @@ public class MLController : ControllerBase
 
         try
         {
-            var response = await client.PostAsync("http://localhost:8000/predict-path", jsonContent);
+            var response = await client.PostAsync(GetMlUrl("/predict-path"), jsonContent);
             
             if (response.IsSuccessStatusCode)
             {
@@ -60,7 +68,7 @@ public class MLController : ControllerBase
 
         try
         {
-            var response = await client.PostAsync("http://localhost:8000/suggest-roles", jsonContent);
+            var response = await client.PostAsync(GetMlUrl("/suggest-roles"), jsonContent);
             
             if (response.IsSuccessStatusCode)
             {
