@@ -14,11 +14,13 @@ public class AdminController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _config;
 
-    public AdminController(AppDbContext db, IHttpClientFactory httpClientFactory)
+    public AdminController(AppDbContext db, IHttpClientFactory httpClientFactory, IConfiguration config)
     {
         _db = db;
         _httpClientFactory = httpClientFactory;
+        _config = config;
     }
 
     private async Task<User?> GetRequestingAdmin()
@@ -61,7 +63,9 @@ public class AdminController : ControllerBase
         try
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            var response = await client.GetAsync("http://localhost:8000/docs"); // FastAPI docs path
+            var mlBaseUrl = _config["MlService:Url"] ?? "https://skillsathi-ml.onrender.com";
+            var healthUrl = $"{mlBaseUrl.TrimEnd('/')}/docs";
+            var response = await client.GetAsync(healthUrl);
             sw.Stop();
             mlOnline = response.IsSuccessStatusCode;
             mlLatencyMs = sw.ElapsedMilliseconds;
