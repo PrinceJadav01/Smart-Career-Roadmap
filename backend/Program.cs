@@ -55,7 +55,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// ── Auto-ensure database schema columns ──────────────────────
+// ── Auto-ensure database schema columns & Admin User ──────
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -65,6 +65,34 @@ using (var scope = app.Services.CreateScope())
             ALTER TABLE users ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL;
         ");
+
+        var adminUser = await db.Users.FirstOrDefaultAsync(u => u.Email == "admin@gmail.com");
+        if (adminUser == null)
+        {
+            adminUser = new SmartCareerRoadmap.API.Models.User
+            {
+                Id = Guid.NewGuid(),
+                Name = "Savan Chauhan (Admin)",
+                Email = "admin@gmail.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin@123"),
+                IsAdmin = true,
+                Level = 5,
+                Xp = 2500,
+                Tokens = 500,
+                Streak = 7,
+                Bio = "System Administrator & Lead Engineer",
+                EducationLevel = "Bachelor's Degree",
+                FieldOfStudy = "Computer Engineering"
+            };
+            db.Users.Add(adminUser);
+        }
+        else
+        {
+            adminUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin@123");
+            adminUser.IsAdmin = true;
+        }
+        await db.SaveChangesAsync();
+        Console.WriteLine("[DB Seeder]: Default Admin Account (admin@gmail.com / admin@123) synced successfully!");
     }
     catch (Exception ex)
     {
