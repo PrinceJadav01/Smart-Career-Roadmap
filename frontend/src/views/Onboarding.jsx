@@ -78,7 +78,7 @@ const Onboarding = ({ userProfile, onComplete }) => {
       setStep(2);
     } catch (err) {
       console.error(err);
-      setError('Failed to get role suggestions. Please try again.');
+      setError(err.message || 'Failed to get role suggestions. Please try again.');
     } finally {
       setLoading(false);
     }
