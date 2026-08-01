@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Coins, ShieldCheck, ShieldAlert, Trash2, Clock, Award, BookOpen } from 'lucide-react';
+import { X, Coins, ShieldCheck, ShieldAlert, Trash2, Clock, Award, BookOpen, RotateCcw, Archive } from 'lucide-react';
 
 function Field({ label, value, mono }) {
   return (
@@ -20,7 +20,7 @@ function SectionHeader({ children }) {
   );
 }
 
-export default function UserDetailDrawer({ user, onClose, onUpdateTokens, onToggleAdmin, onDeleteUser }) {
+export default function UserDetailDrawer({ user, onClose, onUpdateTokens, onToggleAdmin, onDeleteUser, onRestoreUser }) {
   const [tokenAmount, setTokenAmount]   = useState(user.tokens);
   const [adjustReason, setAdjustReason] = useState('Manual adjustment by administrator');
   const [updatingTokens, setUpdatingTokens] = useState(false);
@@ -211,6 +211,23 @@ export default function UserDetailDrawer({ user, onClose, onUpdateTokens, onTogg
               </form>
             </section>
 
+            {/* ── Soft Delete Alert Banner ── */}
+            {user.isDeleted && (
+              <div className="bg-red-950/40 border border-red-800/60 rounded-md p-3 text-red-300 text-xs space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-red-400">
+                  <Archive className="w-4 h-4" /> Account Archived (Soft-Deleted)
+                </div>
+                <p className="text-[10px] text-red-300/80">
+                  This user profile has been soft-deleted. The account cannot log in, but all historical quest activity and data remain safely stored in the database.
+                </p>
+                {user.deletedAt && (
+                  <p className="text-[9px] text-zinc-500 font-mono pt-1">
+                    Archived At: {new Date(user.deletedAt).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* ── Administrative Actions ── */}
             <section className="border-t border-zinc-800 pt-5 space-y-2">
               <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-semibold mb-3">Administrative Actions</p>
@@ -228,19 +245,26 @@ export default function UserDetailDrawer({ user, onClose, onUpdateTokens, onTogg
                   {user.isAdmin ? 'Revoke Admin' : 'Grant Admin'}
                 </button>
 
-                {!confirmDelete ? (
+                {user.isDeleted ? (
+                  <button
+                    onClick={() => { if (onRestoreUser) onRestoreUser(user.id); onClose(); }}
+                    className="flex items-center justify-center gap-1.5 py-2 rounded text-[10px] font-bold border border-emerald-600/40 bg-emerald-950/40 text-emerald-400 hover:bg-emerald-900/40 cursor-pointer transition-colors"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> Restore Account
+                  </button>
+                ) : !confirmDelete ? (
                   <button
                     onClick={() => setConfirmDelete(true)}
                     className="flex items-center justify-center gap-1.5 py-2 rounded text-[10px] font-semibold border border-red-700/30 bg-red-900/10 text-red-400 hover:bg-red-900/25 cursor-pointer transition-colors"
                   >
-                    <Trash2 className="w-3.5 h-3.5" /> Delete Account
+                    <Trash2 className="w-3.5 h-3.5" /> Soft Delete
                   </button>
                 ) : (
                   <button
                     onClick={() => { onDeleteUser(user.id); onClose(); }}
                     className="flex items-center justify-center gap-1.5 py-2 rounded text-[10px] font-bold border border-red-500 bg-red-600 text-white hover:bg-red-500 cursor-pointer transition-colors"
                   >
-                    <Trash2 className="w-3.5 h-3.5" /> Confirm Delete
+                    <Trash2 className="w-3.5 h-3.5" /> Confirm Soft Delete
                   </button>
                 )}
               </div>

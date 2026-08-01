@@ -3,7 +3,7 @@
 // Centralized HTTP client for all backend communication
 // ═══════════════════════════════════════════════════════════
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 // ── Token Management ──────────────────────────────────────
 let authToken = localStorage.getItem('scr_token');
@@ -209,6 +209,12 @@ export async function getAdminUsers() {
 export async function deleteAdminUser(id) {
   return request(`/admin/users/${id}`, {
     method: 'DELETE',
+  });
+}
+
+export async function restoreAdminUser(id) {
+  return request(`/admin/users/${id}/restore`, {
+    method: 'POST',
   });
 }
 

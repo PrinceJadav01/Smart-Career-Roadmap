@@ -45,6 +45,9 @@ public class AuthController : ControllerBase
         if (user == null)
             return Unauthorized(new { message = "No account found with this email address." });
 
+        if (user.IsDeleted)
+            return Unauthorized(new { message = "This account has been deactivated/archived. Please contact an administrator to restore access." });
+
         // Verify password hash
         bool valid = BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash);
         if (!valid)

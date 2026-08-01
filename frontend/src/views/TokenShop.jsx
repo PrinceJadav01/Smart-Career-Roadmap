@@ -15,6 +15,7 @@ export default function TokenShop({ userProfile, onUpdateTokens }) {
     phoneNumber: userProfile?.phoneNumber || '',
     shippingAddress: ''
   });
+  const [formErrors, setFormErrors] = useState({});
   const [submittingOrder, setSubmittingOrder] = useState(false);
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export default function TokenShop({ userProfile, onUpdateTokens }) {
       return;
     }
     setSelectedReward(reward);
+    setFormErrors({});
     setShippingForm({
       fullName: userProfile?.name || '',
       phoneNumber: userProfile?.phoneNumber || '',
@@ -47,19 +49,45 @@ export default function TokenShop({ userProfile, onUpdateTokens }) {
     });
   };
 
+  const validateForm = () => {
+    const errors = {};
+    const name = shippingForm.fullName.trim();
+    if (!name) {
+      errors.fullName = 'Full Name is required.';
+    } else if (name.length < 2) {
+      errors.fullName = 'Full Name must be at least 2 characters long.';
+    }
+
+    const digitsOnly = shippingForm.phoneNumber.replace(/\D/g, '');
+    if (!shippingForm.phoneNumber.trim()) {
+      errors.phoneNumber = 'Contact Phone Number is required.';
+    } else if (digitsOnly.length !== 10) {
+      errors.phoneNumber = 'Phone Number must be a valid 10-digit mobile number (e.g. 9876543210).';
+    }
+
+    const addr = shippingForm.shippingAddress.trim();
+    if (!addr) {
+      errors.shippingAddress = 'Delivery Shipping Address is required.';
+    } else if (addr.length < 10) {
+      errors.shippingAddress = 'Please enter a complete address (at least 10 characters with street, city & pincode).';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleConfirmRedeem = async (e) => {
     e.preventDefault();
-    if (!shippingForm.fullName.trim() || !shippingForm.phoneNumber.trim() || !shippingForm.shippingAddress.trim()) {
-      alert('Please fill out all shipping details (Full Name, Phone Number, and Delivery Address).');
+    if (!validateForm()) {
       return;
     }
 
     setSubmittingOrder(true);
     try {
       const res = await api.redeemReward(selectedReward.id, {
-        fullName: shippingForm.fullName,
-        phoneNumber: shippingForm.phoneNumber,
-        shippingAddress: shippingForm.shippingAddress
+        fullName: shippingForm.fullName.trim(),
+        phoneNumber: shippingForm.phoneNumber.trim(),
+        shippingAddress: shippingForm.shippingAddress.trim()
       });
 
       const orderIdStr = res.Redemption?.orderId || res.Redemption?.OrderId || 'Generated';
@@ -339,26 +367,68 @@ export default function TokenShop({ userProfile, onUpdateTokens }) {
                 </label>
                 <input
                   type="text"
-                  required
                   placeholder="e.g. Savan Chauhan"
                   value={shippingForm.fullName}
-                  onChange={e => setShippingForm({ ...shippingForm, fullName: e.target.value })}
-                  style={{ width: '100%', background: '#08090E', border: '1px solid rgba(255,255,255,0.1)', padding: '0.65rem 0.85rem', borderRadius: 6, color: '#F1F2F4', fontSize: '0.84rem' }}
+                  onChange={e => {
+                    setShippingForm({ ...shippingForm, fullName: e.target.value });
+                    if (formErrors.fullName) setFormErrors({ ...formErrors, fullName: null });
+                  }}
+                  style={{
+                    width: '100%',
+                    background: '#08090E',
+                    border: formErrors.fullName ? '1px solid #F87171' : '1px solid rgba(255,255,255,0.1)',
+                    padding: '0.65rem 0.85rem',
+                    borderRadius: 6,
+                    color: '#F1F2F4',
+                    fontSize: '0.84rem'
+                  }}
                 />
+                {formErrors.fullName && (
+                  <span style={{ fontSize: '0.7rem', color: '#F87171', marginTop: '0.25rem', display: 'block' }}>
+                    {formErrors.fullName}
+                  </span>
+                )}
               </div>
 
               <div>
-                <label style={{ fontSize: '0.7rem', color: '#8A8FA8', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: '0.35rem' }}>
-                  Contact Phone Number
-                </label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <label style={{ fontSize: '0.7rem', color: '#8A8FA8', textTransform: 'uppercase', fontWeight: 700 }}>
+                    Contact Phone Number
+                  </label>
+                  <span style={{ fontSize: '0.65rem', color: '#4B5068', fontFamily: 'JetBrains Mono, monospace' }}>
+                    {shippingForm.phoneNumber.replace(/\D/g, '').length}/10 digits
+                  </span>
+                </div>
                 <input
                   type="tel"
-                  required
-                  placeholder="e.g. +91 9876543210"
+                  maxLength={10}
+                  placeholder="e.g. 9876543210 (10 digits)"
                   value={shippingForm.phoneNumber}
-                  onChange={e => setShippingForm({ ...shippingForm, phoneNumber: e.target.value })}
-                  style={{ width: '100%', background: '#08090E', border: '1px solid rgba(255,255,255,0.1)', padding: '0.65rem 0.85rem', borderRadius: 6, color: '#F1F2F4', fontSize: '0.84rem' }}
+                  onChange={e => {
+                    const onlyNums = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setShippingForm({ ...shippingForm, phoneNumber: onlyNums });
+                    if (formErrors.phoneNumber) setFormErrors({ ...formErrors, phoneNumber: null });
+                  }}
+                  style={{
+                    width: '100%',
+                    background: '#08090E',
+                    border: formErrors.phoneNumber ? '1px solid #F87171' : '1px solid rgba(255,255,255,0.1)',
+                    padding: '0.65rem 0.85rem',
+                    borderRadius: 6,
+                    color: '#F1F2F4',
+                    fontSize: '0.84rem',
+                    fontFamily: 'JetBrains Mono, monospace'
+                  }}
                 />
+                {formErrors.phoneNumber ? (
+                  <span style={{ fontSize: '0.7rem', color: '#F87171', marginTop: '0.25rem', display: 'block' }}>
+                    {formErrors.phoneNumber}
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '0.65rem', color: '#4B5068', marginTop: '0.2rem', display: 'block' }}>
+                    Must be a valid 10-digit mobile number.
+                  </span>
+                )}
               </div>
 
               <div>
@@ -366,13 +436,29 @@ export default function TokenShop({ userProfile, onUpdateTokens }) {
                   Delivery Shipping Address
                 </label>
                 <textarea
-                  required
                   rows={3}
                   placeholder="Flat / House No., Street Name, City, State, Pincode"
                   value={shippingForm.shippingAddress}
-                  onChange={e => setShippingForm({ ...shippingForm, shippingAddress: e.target.value })}
-                  style={{ width: '100%', background: '#08090E', border: '1px solid rgba(255,255,255,0.1)', padding: '0.65rem 0.85rem', borderRadius: 6, color: '#F1F2F4', fontSize: '0.84rem', resize: 'none' }}
+                  onChange={e => {
+                    setShippingForm({ ...shippingForm, shippingAddress: e.target.value });
+                    if (formErrors.shippingAddress) setFormErrors({ ...formErrors, shippingAddress: null });
+                  }}
+                  style={{
+                    width: '100%',
+                    background: '#08090E',
+                    border: formErrors.shippingAddress ? '1px solid #F87171' : '1px solid rgba(255,255,255,0.1)',
+                    padding: '0.65rem 0.85rem',
+                    borderRadius: 6,
+                    color: '#F1F2F4',
+                    fontSize: '0.84rem',
+                    resize: 'none'
+                  }}
                 />
+                {formErrors.shippingAddress && (
+                  <span style={{ fontSize: '0.7rem', color: '#F87171', marginTop: '0.25rem', display: 'block' }}>
+                    {formErrors.shippingAddress}
+                  </span>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>

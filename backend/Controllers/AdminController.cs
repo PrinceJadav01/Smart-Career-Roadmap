@@ -127,6 +127,8 @@ public class AdminController : ControllerBase
             u.Streak,
             u.IsAdmin,
             u.Tokens,
+            u.IsDeleted,
+            u.DeletedAt,
             ActiveQuest = u.ActiveQuest != null ? new { u.ActiveQuest.RoleId, RoleName = u.ActiveQuest.CareerRole?.Name } : null,
             Skills = u.UserSkills.Select(us => new { us.SkillId, us.Skill?.Name, us.Level }),
             Redemptions = redemptions.Where(r => r.UserId == u.Id).Select(r => new { r.RewardId, Title = r.Reward?.Title, r.RedeemedAt }),
@@ -183,12 +185,33 @@ public class AdminController : ControllerBase
         var user = await _db.Users.FindAsync(id);
         if (user == null) return NotFound("User not found.");
 
-        _db.Users.Remove(user);
+        // Soft delete: Retain record in database for audit and future retrieval
+        user.IsDeleted = true;
+        user.DeletedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
-        await LogAdminAction(admin, "USER_DELETE", $"Wiped adventurer registry for user {user.Name} ({user.Email}).");
+        await LogAdminAction(admin, "USER_SOFT_DELETE", $"Soft-deleted and archived user profile for {user.Name} ({user.Email}). Record retained in database.");
 
-        return Ok(new { message = "User deleted successfully." });
+        return Ok(new { message = "User soft-deleted and archived successfully." });
+    }
+
+    [HttpPost("users/{id:guid}/restore")]
+    public async Task<IActionResult> RestoreUser(Guid id)
+    {
+        var admin = await GetRequestingAdmin();
+        if (admin == null) return Forbid("Admin permissions required.");
+
+        var user = await _db.Users.FindAsync(id);
+        if (user == null) return NotFound("User not found.");
+
+        // Restore soft-deleted account
+        user.IsDeleted = false;
+        user.DeletedAt = null;
+        await _db.SaveChangesAsync();
+
+        await LogAdminAction(admin, "USER_RESTORE", $"Restored soft-deleted user profile for {user.Name} ({user.Email}).");
+
+        return Ok(new { message = "User account restored successfully." });
     }
 
     // ── Learning Resources (Courses) CRUD ──

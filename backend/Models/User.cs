@@ -63,6 +63,12 @@ public class User
     [MaxLength(100)]
     public string? FieldOfStudy { get; set; }
 
+    [Column("is_deleted")]
+    public bool IsDeleted { get; set; } = false;
+
+    [Column("deleted_at")]
+    public DateTime? DeletedAt { get; set; }
+
     // Navigation properties
     public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
     public ActiveQuest? ActiveQuest { get; set; }

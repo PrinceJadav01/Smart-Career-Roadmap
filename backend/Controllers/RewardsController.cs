@@ -70,6 +70,37 @@ public class RewardsController : ControllerBase
         if (user == null)
             return NotFound(new { message = "User not found." });
 
+        // ── SERVER-SIDE FORM VALIDATIONS ──
+        if (req == null)
+            return BadRequest(new { message = "Shipping details are required." });
+
+        // 1. Full Name Validation (at least 2 characters)
+        var fullName = req.FullName?.Trim() ?? "";
+        if (string.IsNullOrWhiteSpace(fullName) || fullName.Length < 2)
+            return BadRequest(new { message = "Full Name must be at least 2 characters long." });
+
+        if (fullName.Length > 100)
+            return BadRequest(new { message = "Full Name cannot exceed 100 characters." });
+
+        // 2. Contact Phone Number Validation (Must be exactly 10 digits)
+        var rawPhone = req.PhoneNumber?.Trim() ?? "";
+        var digitsOnly = System.Text.RegularExpressions.Regex.Replace(rawPhone, @"\D", "");
+        if (digitsOnly.StartsWith("91") && digitsOnly.Length == 12)
+        {
+            digitsOnly = digitsOnly[2..]; // Strip country code +91
+        }
+
+        if (digitsOnly.Length != 10)
+            return BadRequest(new { message = "Contact Phone Number must be a valid 10-digit mobile number (e.g., 9876543210)." });
+
+        // 3. Shipping Address Validation (at least 10 characters)
+        var shippingAddr = req.ShippingAddress?.Trim() ?? "";
+        if (string.IsNullOrWhiteSpace(shippingAddr) || shippingAddr.Length < 10)
+            return BadRequest(new { message = "Please provide a complete shipping address (at least 10 characters including street, city, pincode)." });
+
+        if (shippingAddr.Length > 500)
+            return BadRequest(new { message = "Shipping address cannot exceed 500 characters." });
+
         if (user.Tokens < reward.TokenCost)
             return BadRequest(new { message = $"Insufficient tokens. You need {reward.TokenCost} tokens but have {user.Tokens}." });
 
@@ -85,9 +116,9 @@ public class RewardsController : ControllerBase
             OrderId = orderId,
             UserId = userId,
             RewardId = rewardId,
-            FullName = req?.FullName ?? user.Name ?? "Valued Developer",
-            PhoneNumber = req?.PhoneNumber ?? user.PhoneNumber ?? "",
-            ShippingAddress = req?.ShippingAddress ?? "Digital Delivery / Address on file",
+            FullName = fullName,
+            PhoneNumber = digitsOnly,
+            ShippingAddress = shippingAddr,
             Status = "Waiting",
             RedeemedAt = DateTime.UtcNow
         };

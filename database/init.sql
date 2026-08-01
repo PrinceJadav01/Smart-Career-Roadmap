@@ -36,7 +36,9 @@ CREATE TABLE users (
     tokens INT DEFAULT 0,
     phone_number VARCHAR(15),
     education_level VARCHAR(50),
-    field_of_study VARCHAR(100)
+    field_of_study VARCHAR(100),
+    is_deleted BOOLEAN DEFAULT FALSE,
+    deleted_at TIMESTAMP NULL
 );
 
 -- Skills table

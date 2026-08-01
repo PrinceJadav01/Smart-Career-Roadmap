@@ -52,6 +52,23 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// ── Auto-ensure database schema columns ──────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        await db.Database.ExecuteSqlRawAsync(@"
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL;
+        ");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[Schema Migration Warning]: {ex.Message}");
+    }
+}
+
 // ── Middleware Pipeline ────────────────────────────────────
 if (app.Environment.IsDevelopment())
 {

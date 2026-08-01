@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShieldAlert, Plus, Trash2, Search, Eye, ArrowRight, Upload, Image, X } from 'lucide-react';
+import { ShieldAlert, Plus, Trash2, Search, Eye, ArrowRight, Upload, Image, X, RotateCcw, Archive, CheckCircle2 } from 'lucide-react';
 import * as api from '../services/api';
 import AdminDashboard from './AdminDashboard';
 import UserDetailDrawer from './UserDetailDrawer';
@@ -17,6 +17,7 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
   // Tab 2: User Registry
   const [userRegistry, setUserRegistry] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [userFilterTab, setUserFilterTab] = useState('active'); // 'active' | 'archived'
   const [selectedUser, setSelectedUser] = useState(null);
 
   // Tab 3: Quest Workshop
@@ -124,9 +125,19 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
 
   // ── Tab 2 Handlers ──
   const handleDeleteUser = async (id) => {
-    if (!confirm('Are you sure you want to delete this user? All their progress will be wiped.')) return;
+    if (!confirm('Are you sure you want to soft-delete and archive this user account? Profile data will be retained in database.')) return;
     try {
       await api.deleteAdminUser(id);
+      fetchData();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleRestoreUser = async (id) => {
+    if (!confirm('Restore this soft-deleted user account back to active status?')) return;
+    try {
+      await api.restoreAdminUser(id);
       fetchData();
     } catch (err) {
       alert(err.message);
@@ -276,10 +287,12 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
   }
 
   // Filter user registry
-  const filteredUsers = userRegistry.filter(u => 
-    u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredUsers = userRegistry.filter(u => {
+    const matchesSearch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          u.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTab = userFilterTab === 'archived' ? u.isDeleted : !u.isDeleted;
+    return matchesSearch && matchesTab;
+  });
 
   return (
     <div className="space-y-6 pb-12">
@@ -403,20 +416,53 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
         <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-lg space-y-4 text-zinc-100">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-850 pb-3">
             <div>
-              <h2 className="text-xs font-semibold text-zinc-200 uppercase tracking-widest">
-                User Registry ({filteredUsers.length})
-              </h2>
-              <p className="text-[10px] text-zinc-500 mt-0.5">Database view of all registered user records</p>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xs font-semibold text-zinc-200 uppercase tracking-widest">
+                  User Registry ({filteredUsers.length})
+                </h2>
+                <span className="text-[9px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded font-mono">
+                  {userFilterTab === 'active' ? 'Active Records' : 'Archived / Soft-Deleted'}
+                </span>
+              </div>
+              <p className="text-[10px] text-zinc-500 mt-0.5">Database view of active and soft-deleted user records</p>
             </div>
-            <div className="relative max-w-xs w-full">
-              <input
-                type="text"
-                placeholder="Search name or email..."
-                className="w-full bg-zinc-950 border border-zinc-800 rounded pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-600 font-sans placeholder:text-zinc-600"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-              />
-              <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
+
+            <div className="flex items-center gap-3">
+              {/* Active vs Soft-Deleted Filter Toggle */}
+              <div className="flex items-center bg-zinc-950 p-1 rounded border border-zinc-800">
+                <button
+                  onClick={() => setUserFilterTab('active')}
+                  className={`px-3 py-1 rounded text-xs font-semibold cursor-pointer transition-colors ${
+                    userFilterTab === 'active'
+                      ? 'bg-blue-600/30 text-blue-400 border border-blue-500/40'
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  Active ({userRegistry.filter(u => !u.isDeleted).length})
+                </button>
+                <button
+                  onClick={() => setUserFilterTab('archived')}
+                  className={`px-3 py-1 rounded text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors ${
+                    userFilterTab === 'archived'
+                      ? 'bg-amber-600/30 text-amber-400 border border-amber-500/40'
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  <Archive className="w-3 h-3" />
+                  Archived ({userRegistry.filter(u => u.isDeleted).length})
+                </button>
+              </div>
+
+              <div className="relative max-w-xs w-full">
+                <input
+                  type="text"
+                  placeholder="Search name or email..."
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-600 font-sans placeholder:text-zinc-600"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                />
+                <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
+              </div>
             </div>
           </div>
 
@@ -425,13 +471,13 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
               <thead>
                 <tr className="border-b border-zinc-800 text-zinc-500 uppercase tracking-wider text-[10px] font-semibold">
                   <th className="pb-3 pt-1 px-2">User ID</th>
-                  <th className="pb-3 pt-1 px-2">Name</th>
+                  <th className="pb-3 pt-1 px-2">Name & Status</th>
                   <th className="pb-3 pt-1 px-2">Email</th>
                   <th className="pb-3 pt-1 px-2">Education Level</th>
                   <th className="pb-3 pt-1 px-2">Field of Study</th>
                   <th className="pb-3 pt-1 px-2 text-right">Tokens</th>
                   <th className="pb-3 pt-1 text-center">Inspect</th>
-                  <th className="pb-3 pt-1 text-center">Delete</th>
+                  <th className="pb-3 pt-1 text-center">{userFilterTab === 'archived' ? 'Restore' : 'Soft Delete'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-850">
@@ -442,8 +488,9 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
                     </td>
                     <td className="py-2.5 px-2 font-medium text-zinc-200">
                       <div className="flex items-center gap-1.5">
-                        {u.name}
+                        <span className={u.isDeleted ? 'line-through text-zinc-500' : ''}>{u.name}</span>
                         {u.isAdmin && <span className="text-[8px] bg-blue-900/40 text-blue-400 px-1 rounded border border-blue-700/30 font-bold uppercase">ADMIN</span>}
+                        {u.isDeleted && <span className="text-[8px] bg-red-900/40 text-red-400 px-1 rounded border border-red-700/30 font-bold uppercase">ARCHIVED</span>}
                       </div>
                     </td>
                     <td className="py-2.5 px-2 text-zinc-400 font-mono text-[11px]">{u.email}</td>
@@ -459,13 +506,24 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
                       </button>
                     </td>
                     <td className="py-2.5 text-center">
-                      <button
-                        onClick={() => handleDeleteUser(u.id)}
-                        disabled={u.id === currentUser.id}
-                        className="text-red-400 hover:text-red-300 p-1 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {u.isDeleted ? (
+                        <button
+                          onClick={() => handleRestoreUser(u.id)}
+                          className="flex items-center justify-center gap-1 mx-auto text-emerald-400 hover:text-emerald-300 bg-emerald-950/40 border border-emerald-700/40 px-2 py-1 rounded cursor-pointer text-[10px] font-semibold transition-colors"
+                          title="Restore account"
+                        >
+                          <RotateCcw className="w-3 h-3" /> Restore
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleDeleteUser(u.id)}
+                          disabled={u.id === currentUser.id}
+                          className="text-red-400 hover:text-red-300 p-1 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Soft-delete & archive user"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -910,6 +968,7 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
           onUpdateTokens={handleUpdateTokens}
           onToggleAdmin={handleToggleAdmin}
           onDeleteUser={handleDeleteUser}
+          onRestoreUser={handleRestoreUser}
         />
       )}
     </div>
