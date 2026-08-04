@@ -16,7 +16,7 @@ import SignUp from './views/SignUp';
 import AdminLayout from './views/AdminLayout';
 import { 
   Shield, Target, Award, BookOpen, User, 
-  Menu, X, Bell, Edit3, Map,
+  Menu, X, Edit3, Map,
   Sun, Moon
 } from 'lucide-react';
 import * as api from './services/api';
@@ -941,11 +941,7 @@ function App() {
 
           {/* User profile & Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button style={{ background: 'none', border: 'none', color: '#8A8FA8', cursor: 'pointer', position: 'relative', padding: 0 }}>
-              <Bell className="w-4 h-4" />
-              <span style={{ position: 'absolute', top: -2, right: -2, width: 6, height: 6, background: '#00C896', borderRadius: '50%' }} />
-            </button>
-            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setCurrentPage('profile')}>
               <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #00C896 0%, #008765 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.75rem', color: '#08090E' }}>
                 {userProfile.name.charAt(0).toUpperCase()}
