@@ -158,9 +158,11 @@ export default function Admin({ currentUser, activeTab: propActiveTab }) {
   const handleCreateQuest = async (e) => {
     e.preventDefault();
     try {
+      const endD = new Date(newQuest.endDate);
+      endD.setHours(23, 59, 59, 999);
       await api.createAdminQuest({
         ...newQuest,
-        endDate: new Date(newQuest.endDate).toISOString()
+        endDate: endD.toISOString()
       });
       setNewQuest({ title: '', description: '', endDate: '', rewardTokens: 100 });
       fetchData();

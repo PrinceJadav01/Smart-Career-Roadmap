@@ -17,20 +17,20 @@ public class WeeklyQuestsController : ControllerBase
     public WeeklyQuestsController(AppDbContext db) => _db = db;
 
     // ── Get Active Weekly Quest (with options, hidden correct answer) ──
-    // Skips quests the user already completed — shows the NEXT available one
+    // ── Get Active Weekly Quest (with options, hidden correct answer) ──
     [HttpGet("active")]
-    public async Task<IActionResult> GetActiveQuest()
+    public async Task<IActionResult> GetActiveQuest([FromQuery] Guid? questId = null)
     {
         // Get user ID early so we can check submissions
         var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         Guid userId = Guid.Empty;
         Guid.TryParse(userIdStr, out userId);
 
-        // Get all active quests (not expired)
+        // Get all active quests (closing today or in the future)
         var activeQuests = await _db.WeeklyQuests
             .Include(q => q.Questions)
-            .Where(q => q.EndDate > DateTime.UtcNow)
-            .OrderBy(q => q.EndDate)
+            .Where(q => q.EndDate >= DateTime.UtcNow.AddDays(-1))
+            .OrderByDescending(q => q.EndDate)
             .ToListAsync();
 
         // Get IDs of quests this user has already submitted
@@ -41,17 +41,31 @@ public class WeeklyQuestsController : ControllerBase
                 .ToListAsync()
             : new List<Guid>();
 
-        // Find the first active quest the user hasn't submitted yet
-        // OrderByDescending so NEWEST quests (latest EndDate) appear first
-        var activeQuest = activeQuests
-            .Where(q => !submittedQuestIds.Contains(q.Id))
-            .OrderByDescending(q => q.EndDate)
-            .FirstOrDefault();
+        WeeklyQuest? activeQuest = null;
 
-        // If all active quests are completed, show the most recently completed one with results
+        // If specific quest requested by user, select it
+        if (questId.HasValue && questId.Value != Guid.Empty)
+        {
+            activeQuest = activeQuests.FirstOrDefault(q => q.Id == questId.Value);
+            if (activeQuest == null)
+            {
+                // Fallback to fetch from DB if not in activeQuests list
+                activeQuest = await _db.WeeklyQuests
+                    .Include(q => q.Questions)
+                    .FirstOrDefaultAsync(q => q.Id == questId.Value);
+            }
+        }
+
+        // If no specific quest requested or not found, pick the newest unsubmitted active quest
+        if (activeQuest == null)
+        {
+            activeQuest = activeQuests.FirstOrDefault(q => !submittedQuestIds.Contains(q.Id));
+        }
+
+        // If all active quests are completed, show the newest active quest with user's results
         if (activeQuest == null && activeQuests.Any())
         {
-            activeQuest = activeQuests.OrderByDescending(q => q.EndDate).First();
+            activeQuest = activeQuests.First();
         }
 
         if (activeQuest == null)
@@ -113,6 +127,7 @@ public class WeeklyQuestsController : ControllerBase
             };
             _db.WeeklyQuests.Add(activeQuest);
             await _db.SaveChangesAsync();
+            activeQuests.Add(activeQuest);
         }
         else if (activeQuest.Questions.Count == 0)
         {
@@ -191,9 +206,20 @@ public class WeeklyQuestsController : ControllerBase
             }
         }
 
-        // Tell frontend how many more unsubmitted quests remain
+        // Calculate count of unsubmitted active quests
         int remainingQuests = activeQuests.Count(q => !submittedQuestIds.Contains(q.Id));
-        if (alreadySubmitted) remainingQuests = Math.Max(0, remainingQuests);
+
+        // Build list of all active quests summary for frontend catalog switcher
+        var allQuestsSummary = activeQuests.Select(q => new
+        {
+            q.Id,
+            q.Title,
+            q.Description,
+            q.RewardTokens,
+            q.EndDate,
+            QuestionsCount = q.Questions.Count,
+            IsSubmitted = submittedQuestIds.Contains(q.Id)
+        });
 
         // Return questions without the correct option to prevent cheating
         var questionsPayload = activeQuest.Questions.Select(q => new
@@ -217,6 +243,7 @@ public class WeeklyQuestsController : ControllerBase
             Questions = questionsPayload,
             AlreadySubmitted = alreadySubmitted,
             RemainingQuests = remainingQuests,
+            AllQuests = allQuestsSummary,
             UserSubmission = userSubmission != null ? new { 
                 userSubmission.Score, 
                 userSubmission.DurationSeconds, 

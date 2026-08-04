@@ -22,15 +22,17 @@ export default function WeeklyQuest() {
     return () => clearInterval(timerRef.current);
   }, []);
 
-  const fetchActiveQuest = async () => {
+  const fetchActiveQuest = async (targetQuestId = null) => {
     setLoading(true);
     setError('');
+    setSubmissionResult(null);
+    setGameStarted(false);
     try {
-      const data = await api.getActiveWeeklyQuest();
+      const data = await api.getActiveWeeklyQuest(targetQuestId);
       setQuest(data);
-      if (data.alreadySubmitted) {
-        setSubmissionResult(data.userSubmission);
-        fetchLeaderboard(data.id);
+      if (data.alreadySubmitted || data.AlreadySubmitted) {
+        setSubmissionResult(data.userSubmission || data.UserSubmission);
+        fetchLeaderboard(data.id || data.Id);
       }
     } catch (err) {
       console.error(err);
@@ -128,13 +130,63 @@ export default function WeeklyQuest() {
     return { bg: '#08090E', border: 'rgba(255,255,255,0.06)', text: '#8A8FA8', label: `#${rank}`, bonus: null };
   };
 
+  const allQuests = quest?.allQuests || quest?.AllQuests || [];
+
+  const renderQuestTabs = () => {
+    if (!allQuests || allQuests.length <= 1) return null;
+    const currentId = quest?.id || quest?.Id;
+
+    return (
+      <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.75rem', marginBottom: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        {allQuests.map((q) => {
+          const qId = q.id || q.Id;
+          const isSelected = qId === currentId;
+          const isDone = q.isSubmitted || q.IsSubmitted;
+
+          return (
+            <button
+              key={qId}
+              onClick={() => {
+                if (qId !== currentId) fetchActiveQuest(qId);
+              }}
+              style={{
+                padding: '0.45rem 0.85rem',
+                borderRadius: 8,
+                fontSize: '0.8125rem',
+                fontWeight: isSelected ? 700 : 500,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                whiteSpace: 'nowrap',
+                background: isSelected ? 'rgba(0,200,150,0.15)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${isSelected ? '#00C896' : 'rgba(255,255,255,0.08)'}`,
+                color: isSelected ? '#00C896' : '#F1F2F4',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>{q.title || q.Title}</span>
+              {isDone ? (
+                <span style={{ fontSize: '0.65rem', background: 'rgba(0,200,150,0.2)', color: '#00C896', padding: '0.1rem 0.4rem', borderRadius: 4 }}>✓ Done</span>
+              ) : (
+                <span style={{ fontSize: '0.65rem', background: 'rgba(59,130,246,0.2)', color: '#60A5FA', padding: '0.1rem 0.4rem', borderRadius: 4 }}>▶ Available</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
   // ── Results Screen ──
   if (submissionResult) {
     const rank = submissionResult.rank ?? submissionResult.Rank ?? submissionResult.userSubmission?.rank ?? 0;
     const bonusTokens = submissionResult.bonusTokens ?? submissionResult.BonusTokens ?? (rank === 1 ? 50 : rank === 2 ? 30 : rank === 3 ? 15 : 0);
 
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {renderQuestTabs()}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
         <div className="surface" style={{ padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1.25rem', alignItems: 'center' }}>
           <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(0,200,150,0.15)', border: '2px solid #00C896', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00C896' }}>
             <Trophy style={{ width: 28, height: 28 }} />
@@ -247,13 +299,16 @@ export default function WeeklyQuest() {
           )}
         </div>
       </div>
+      </div>
     );
   }
 
   // ── Start / Intro ──
   if (!gameStarted) {
     return (
-      <div className="surface" style={{ padding: '2rem', maxWidth: 540, margin: '0 auto', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: 540, margin: '0 auto' }}>
+        {renderQuestTabs()}
+        <div className="surface" style={{ padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
         <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(0,200,150,0.15)', border: '1px solid rgba(0,200,150,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00C896' }}>
           <Sparkles style={{ width: 24, height: 24 }} />
         </div>
@@ -304,6 +359,7 @@ export default function WeeklyQuest() {
         >
           <Play style={{ width: 15, height: 15, fill: 'currentColor' }} /> Start Weekly Challenge
         </button>
+      </div>
       </div>
     );
   }

@@ -291,8 +291,9 @@ export async function toggleUserAdmin(id) {
 
 
 // ── Weekly Quest Endpoints ──────────────────────────────────
-export async function getActiveWeeklyQuest() {
-  return request('/weeklyquests/active');
+export async function getActiveWeeklyQuest(questId = null) {
+  const query = questId ? `?questId=${questId}` : '';
+  return request(`/weeklyquests/active${query}`);
 }
 
 export async function submitWeeklyQuest(submission) {
