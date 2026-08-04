@@ -197,12 +197,12 @@ export default function TokenShop({ userProfile, onUpdateTokens }) {
               >
                 <div>
                   {/* Item Image */}
-                  <div style={{ width: '100%', height: 170, borderRadius: 8, overflow: 'hidden', background: '#08090E', marginBottom: '1rem', position: 'relative', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ width: '100%', height: 170, borderRadius: 8, overflow: 'hidden', background: '#0D0F14', marginBottom: '1rem', position: 'relative', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {item.imageUrl ? (
                       <img
                         src={item.imageUrl}
                         alt={item.title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '0.5rem' }}
                         onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
                       />
                     ) : (
@@ -269,7 +269,7 @@ export default function TokenShop({ userProfile, onUpdateTokens }) {
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', minWidth: 260 }}>
                   <div style={{ width: 64, height: 64, borderRadius: 8, background: '#08090E', overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4B5068' }}>
                     {order.imageUrl ? (
-                      <img src={order.imageUrl} alt={order.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={order.imageUrl} alt={order.title} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '0.25rem' }} />
                     ) : (
                       <Package style={{ width: 28, height: 28 }} />
                     )}
