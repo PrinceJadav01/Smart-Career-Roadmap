@@ -17,14 +17,38 @@ public class WeeklyQuestsController : ControllerBase
     public WeeklyQuestsController(AppDbContext db) => _db = db;
 
     // ── Get Active Weekly Quest (with options, hidden correct answer) ──
+    // Skips quests the user already completed — shows the NEXT available one
     [HttpGet("active")]
     public async Task<IActionResult> GetActiveQuest()
     {
-        var activeQuest = await _db.WeeklyQuests
+        // Get user ID early so we can check submissions
+        var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        Guid userId = Guid.Empty;
+        Guid.TryParse(userIdStr, out userId);
+
+        // Get all active quests (not expired)
+        var activeQuests = await _db.WeeklyQuests
             .Include(q => q.Questions)
             .Where(q => q.EndDate > DateTime.UtcNow)
             .OrderBy(q => q.EndDate)
-            .FirstOrDefaultAsync();
+            .ToListAsync();
+
+        // Get IDs of quests this user has already submitted
+        var submittedQuestIds = userId != Guid.Empty
+            ? await _db.QuestSubmissions
+                .Where(s => s.UserId == userId)
+                .Select(s => s.WeeklyQuestId)
+                .ToListAsync()
+            : new List<Guid>();
+
+        // Find the first active quest the user hasn't submitted yet
+        var activeQuest = activeQuests.FirstOrDefault(q => !submittedQuestIds.Contains(q.Id));
+
+        // If all active quests are completed, show the most recently completed one with results
+        if (activeQuest == null && activeQuests.Any())
+        {
+            activeQuest = activeQuests.Last();
+        }
 
         if (activeQuest == null)
         {
@@ -144,13 +168,12 @@ public class WeeklyQuestsController : ControllerBase
             activeQuest.Questions = sampleQuestions;
         }
 
-        // Check if user already submitted
-        var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // Check if user already submitted THIS quest
         bool alreadySubmitted = false;
         QuestSubmission? userSubmission = null;
         int userRank = 0;
 
-        if (Guid.TryParse(userIdStr, out var userId))
+        if (userId != Guid.Empty)
         {
             userSubmission = await _db.QuestSubmissions
                 .FirstOrDefaultAsync(s => s.UserId == userId && s.WeeklyQuestId == activeQuest.Id);
@@ -163,6 +186,10 @@ public class WeeklyQuestsController : ControllerBase
                     .CountAsync(s => s.Score > userSubmission.Score || (s.Score == userSubmission.Score && s.DurationSeconds < userSubmission.DurationSeconds)) + 1;
             }
         }
+
+        // Tell frontend how many more unsubmitted quests remain
+        int remainingQuests = activeQuests.Count(q => !submittedQuestIds.Contains(q.Id));
+        if (alreadySubmitted) remainingQuests = Math.Max(0, remainingQuests);
 
         // Return questions without the correct option to prevent cheating
         var questionsPayload = activeQuest.Questions.Select(q => new
@@ -185,6 +212,7 @@ public class WeeklyQuestsController : ControllerBase
             activeQuest.RewardTokens,
             Questions = questionsPayload,
             AlreadySubmitted = alreadySubmitted,
+            RemainingQuests = remainingQuests,
             UserSubmission = userSubmission != null ? new { 
                 userSubmission.Score, 
                 userSubmission.DurationSeconds, 
@@ -193,6 +221,7 @@ public class WeeklyQuestsController : ControllerBase
             } : null
         });
     }
+
 
     // ── Submit Quiz ──
     [HttpPost("submit")]

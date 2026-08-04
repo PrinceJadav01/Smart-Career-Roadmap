@@ -173,6 +173,24 @@ export default function WeeklyQuest() {
           <p style={{ fontSize: '0.75rem', color: '#4B5068', maxWidth: 340 }}>
             New challenges release every week. Redeem earned tokens in the Rewards section.
           </p>
+
+          {/* Show "Next Challenge" button if more quests are available */}
+          {(quest?.remainingQuests > 0 || quest?.RemainingQuests > 0) && (
+            <button
+              onClick={() => {
+                setSubmissionResult(null);
+                setGameStarted(false);
+                setQuest(null);
+                setUserAnswers({});
+                setCurrentQuestionIndex(0);
+                fetchActiveQuest();
+              }}
+              className="btn-primary"
+              style={{ width: '100%', maxWidth: 340, padding: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            >
+              <ArrowRight style={{ width: 15, height: 15 }} /> Next Challenge Available!
+            </button>
+          )}
         </div>
 
         {/* Leaderboard */}
