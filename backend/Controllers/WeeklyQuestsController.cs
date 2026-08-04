@@ -42,12 +42,16 @@ public class WeeklyQuestsController : ControllerBase
             : new List<Guid>();
 
         // Find the first active quest the user hasn't submitted yet
-        var activeQuest = activeQuests.FirstOrDefault(q => !submittedQuestIds.Contains(q.Id));
+        // OrderByDescending so NEWEST quests (latest EndDate) appear first
+        var activeQuest = activeQuests
+            .Where(q => !submittedQuestIds.Contains(q.Id))
+            .OrderByDescending(q => q.EndDate)
+            .FirstOrDefault();
 
         // If all active quests are completed, show the most recently completed one with results
         if (activeQuest == null && activeQuests.Any())
         {
-            activeQuest = activeQuests.Last();
+            activeQuest = activeQuests.OrderByDescending(q => q.EndDate).First();
         }
 
         if (activeQuest == null)
