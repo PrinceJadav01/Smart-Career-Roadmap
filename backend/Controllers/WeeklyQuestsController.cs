@@ -33,6 +33,15 @@ public class WeeklyQuestsController : ControllerBase
             .OrderByDescending(q => q.EndDate)
             .ToListAsync();
 
+        // If no active quests found in date window, fallback to load ALL existing quests in DB
+        if (!activeQuests.Any())
+        {
+            activeQuests = await _db.WeeklyQuests
+                .Include(q => q.Questions)
+                .OrderByDescending(q => q.EndDate)
+                .ToListAsync();
+        }
+
         // Get IDs of quests this user has already submitted
         var submittedQuestIds = userId != Guid.Empty
             ? await _db.QuestSubmissions
@@ -70,63 +79,71 @@ public class WeeklyQuestsController : ControllerBase
 
         if (activeQuest == null)
         {
+            var newQuestId = Guid.NewGuid();
             activeQuest = new WeeklyQuest
             {
-                Id = Guid.NewGuid(),
+                Id = newQuestId,
                 Title = "Full-Stack & System Design Sprint",
                 Description = "Test your software engineering knowledge across Data Structures, Web Architecture, and REST APIs. Complete for token rewards!",
                 EndDate = DateTime.UtcNow.AddDays(7),
-                RewardTokens = 150,
-                Questions = new List<QuestQuestion>
-                {
-                    new QuestQuestion
-                    {
-                        Id = Guid.NewGuid(),
-                        QuestionText = "Which data structure uses LIFO (Last In First Out) ordering?",
-                        OptionA = "Queue",
-                        OptionB = "Stack",
-                        OptionC = "Linked List",
-                        OptionD = "Binary Tree",
-                        CorrectOption = "B",
-                        Points = 10
-                    },
-                    new QuestQuestion
-                    {
-                        Id = Guid.NewGuid(),
-                        QuestionText = "What HTTP status code represents a successful resource creation in REST APIs?",
-                        OptionA = "200 OK",
-                        OptionB = "201 Created",
-                        OptionC = "204 No Content",
-                        OptionD = "400 Bad Request",
-                        CorrectOption = "B",
-                        Points = 10
-                    },
-                    new QuestQuestion
-                    {
-                        Id = Guid.NewGuid(),
-                        QuestionText = "What is the worst-case time complexity of QuickSort?",
-                        OptionA = "O(n)",
-                        OptionB = "O(n log n)",
-                        OptionC = "O(n²)",
-                        OptionD = "O(1)",
-                        CorrectOption = "C",
-                        Points = 15
-                    },
-                    new QuestQuestion
-                    {
-                        Id = Guid.NewGuid(),
-                        QuestionText = "In Relational Databases, what key uniquely identifies a row in a table?",
-                        OptionA = "Foreign Key",
-                        OptionB = "Index Key",
-                        OptionC = "Primary Key",
-                        OptionD = "Composite Foreign Key",
-                        CorrectOption = "C",
-                        Points = 10
-                    }
-                }
+                RewardTokens = 150
             };
             _db.WeeklyQuests.Add(activeQuest);
+
+            var sampleQuestions = new List<QuestQuestion>
+            {
+                new QuestQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    WeeklyQuestId = newQuestId,
+                    QuestionText = "Which data structure uses LIFO (Last In First Out) ordering?",
+                    OptionA = "Queue",
+                    OptionB = "Stack",
+                    OptionC = "Linked List",
+                    OptionD = "Binary Tree",
+                    CorrectOption = "B",
+                    Points = 10
+                },
+                new QuestQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    WeeklyQuestId = newQuestId,
+                    QuestionText = "What HTTP status code represents a successful resource creation in REST APIs?",
+                    OptionA = "200 OK",
+                    OptionB = "201 Created",
+                    OptionC = "204 No Content",
+                    OptionD = "400 Bad Request",
+                    CorrectOption = "B",
+                    Points = 10
+                },
+                new QuestQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    WeeklyQuestId = newQuestId,
+                    QuestionText = "What is the worst-case time complexity of QuickSort?",
+                    OptionA = "O(n)",
+                    OptionB = "O(n log n)",
+                    OptionC = "O(n²)",
+                    OptionD = "O(1)",
+                    CorrectOption = "C",
+                    Points = 15
+                },
+                new QuestQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    WeeklyQuestId = newQuestId,
+                    QuestionText = "In Relational Databases, what key uniquely identifies a row in a table?",
+                    OptionA = "Foreign Key",
+                    OptionB = "Index Key",
+                    OptionC = "Primary Key",
+                    OptionD = "Composite Foreign Key",
+                    CorrectOption = "C",
+                    Points = 10
+                }
+            };
+            _db.QuestQuestions.AddRange(sampleQuestions);
             await _db.SaveChangesAsync();
+            activeQuest.Questions = sampleQuestions;
             activeQuests.Add(activeQuest);
         }
         else if (activeQuest.Questions.Count == 0)
