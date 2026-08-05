@@ -10,13 +10,14 @@ const Careers = ({ careerRoles, selectedRole, userSkills, selectTargetRole }) =>
     role.requirements.forEach(req => {
       const userSkill = userSkills.find(s => s.name === req.skill);
       const level = userSkill ? userSkill.level : 0;
-      const weight = req.importance;
+      const targetLevel = req.importance;
       
-      totalWeight += weight * 5;
-      earnedWeight += weight * level;
+      totalWeight += targetLevel;
+      earnedWeight += Math.min(level, targetLevel);
     });
 
-    return totalWeight > 0 ? Math.round((earnedWeight / totalWeight) * 100) : 0;
+    const hasAnySkill = userSkills && userSkills.some(s => s.level > 0);
+    return (hasAnySkill && totalWeight > 0) ? Math.round((earnedWeight / totalWeight) * 100) : 0;
   };
 
   const getDemandBadge = (demand) => {

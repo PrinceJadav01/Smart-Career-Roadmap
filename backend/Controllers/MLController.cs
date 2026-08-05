@@ -97,15 +97,66 @@ public class MLController : ControllerBase
 
     private static object GetFallbackRoles(Dictionary<string, int> userSkills)
     {
-        var defaultRoles = new[]
+        var roleSpecs = new[]
         {
-            new { role = "Full Stack Engineer", match_percent = 92, demand = "High 🔥", salary_range = "$85k - $140k", missing_skills = new[] { "Docker", "AWS" }, is_trending = true },
-            new { role = "Frontend Developer", match_percent = 88, demand = "High 🔥", salary_range = "$75k - $125k", missing_skills = new[] { "TypeScript" }, is_trending = true },
-            new { role = "Backend Engineer", match_percent = 85, demand = "Very High 🔥🔥", salary_range = "$90k - $150k", missing_skills = new[] { "System Design" }, is_trending = true },
-            new { role = "DevOps Engineer", match_percent = 80, demand = "Very High 🔥🔥", salary_range = "$95k - $160k", missing_skills = new[] { "Kubernetes" }, is_trending = false },
-            new { role = "AI/ML Engineer", match_percent = 78, demand = "Explosive 🚀", salary_range = "$100k - $175k", missing_skills = new[] { "PyTorch" }, is_trending = true }
+            new { Role = "Frontend Developer", Demand = "High 🔥", Salary = "₹6-18 LPA", Trending = true, Reqs = new[] { ("HTML & CSS", 5), ("JavaScript", 5), ("React JS", 5), ("Tailwind CSS", 4), ("TypeScript", 4) } },
+            new { Role = "Backend Engineer", Demand = "Critical 🔥🔥", Salary = "₹8-22 LPA", Trending = true, Reqs = new[] { ("C# Programming", 5), ("ASP.NET Core", 5), ("REST APIs", 5), ("PostgreSQL", 4), ("Node.js", 3) } },
+            new { Role = "Full Stack Engineer", Demand = "Critical 🔥🔥", Salary = "₹10-25 LPA", Trending = true, Reqs = new[] { ("HTML & CSS", 4), ("JavaScript", 5), ("React JS", 5), ("C# Programming", 4), ("ASP.NET Core", 4), ("REST APIs", 5), ("PostgreSQL", 4) } },
+            new { Role = "AI/ML Engineer", Demand = "Explosive 🚀", Salary = "₹12-28 LPA", Trending = true, Reqs = new[] { ("Python Core", 5), ("FastAPI", 4), ("scikit-learn", 5), ("Pandas & NumPy", 5), ("REST APIs", 3) } },
+            new { Role = "DevOps Engineer", Demand = "Very High 🔥🔥", Salary = "₹15-28 LPA", Trending = false, Reqs = new[] { ("Docker", 5), ("AWS", 4), ("Git", 4), ("Python Core", 3), ("Kubernetes", 4) } }
         };
-        return defaultRoles;
+
+        bool hasAnySkills = userSkills != null && userSkills.Values.Any(v => v > 0);
+
+        var scored = roleSpecs.Select(spec =>
+        {
+            int totalWeight = spec.Reqs.Sum(r => r.Item2);
+            int userScore = 0;
+            var missing = new List<string>();
+
+            foreach (var req in spec.Reqs)
+            {
+                int userLvl = 0;
+                if (userSkills != null)
+                {
+                    // Case-insensitive lookup
+                    var key = userSkills.Keys.FirstOrDefault(k => k.Equals(req.Item1, StringComparison.OrdinalIgnoreCase));
+                    if (key != null) userLvl = userSkills[key];
+                }
+
+                if (userLvl >= req.Item2)
+                {
+                    userScore += req.Item2;
+                }
+                else if (userLvl > 0)
+                {
+                    userScore += userLvl;
+                    missing.Add(req.Item1);
+                }
+                else
+                {
+                    missing.Add(req.Item1);
+                }
+            }
+
+            int matchPct = (hasAnySkills && totalWeight > 0)
+                ? (int)Math.Round((double)userScore / totalWeight * 100)
+                : 0;
+
+            return new
+            {
+                role = spec.Role,
+                match_percent = matchPct,
+                demand = spec.Demand,
+                salary_range = spec.Salary,
+                missing_skills = missing,
+                is_trending = spec.Trending
+            };
+        })
+        .OrderByDescending(r => r.match_percent)
+        .ToList();
+
+        return scored;
     }
 }
 

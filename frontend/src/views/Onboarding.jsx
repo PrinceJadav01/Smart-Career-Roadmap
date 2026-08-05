@@ -69,6 +69,11 @@ const Onboarding = ({ userProfile, onComplete }) => {
   };
 
   const handleStep1Continue = async () => {
+    const count = Object.keys(selectedSkills).length;
+    if (count === 0) {
+      setError('Please select at least 1 skill to continue.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
@@ -79,22 +84,6 @@ const Onboarding = ({ userProfile, onComplete }) => {
     } catch (err) {
       console.error(err);
       setError(err.message || 'Failed to get role suggestions. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSkipSkills = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await api.suggestRoles({});
-      setSuggestedRoles(res.suggested_roles || res.suggestedRoles || []);
-      setSuggestSource('trending');
-      setStep(2);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to load trending roles. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -116,8 +105,18 @@ const Onboarding = ({ userProfile, onComplete }) => {
     }
   };
 
-  const handleStartJourney = () => {
-    onComplete(selectedRole?.role || 'Frontend Developer', selectedSkills);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleStartJourney = async () => {
+    setSubmitting(true);
+    try {
+      const targetRole = selectedRole?.role || selectedRole?.name || 'Frontend Developer';
+      await onComplete(targetRole, selectedSkills);
+    } catch (err) {
+      console.error('Error starting journey:', err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const StepIndicator = () => (
@@ -158,7 +157,7 @@ const Onboarding = ({ userProfile, onComplete }) => {
               Select Your Skills
             </h1>
             <p className="text-slate-400 mt-2 max-w-lg mx-auto text-sm">
-              Choose the skills you already know. Our AI will suggest the best career paths based on your expertise. You can skip this step if you're just exploring.
+              Select the skills you already know (at least 1 required). Our AI will analyze your selection and recommend your top matching career paths.
             </p>
           </div>
 
@@ -271,21 +270,16 @@ const Onboarding = ({ userProfile, onComplete }) => {
             ))}
           </div>
 
-          <div className="flex items-center justify-between mt-10 pt-6 border-t border-slate-800">
-            <button
-              onClick={handleSkipSkills}
-              disabled={loading}
-              className="px-6 py-3 text-sm text-slate-400 hover:text-gold transition-all cursor-pointer bg-transparent border border-slate-700 rounded-xl hover:border-gold/30 disabled:opacity-50"
-            >
-              Skip for now →
-            </button>
+          <div className="flex items-center justify-center mt-10 pt-6 border-t border-slate-800">
             <button
               onClick={handleStep1Continue}
               disabled={loading || selectedCount === 0}
-              className="px-8 py-3 bg-gradient-to-r from-gold to-amber-500 text-[#06070F] font-bold rounded-xl shadow-lg hover:shadow-[0_0_20px_rgba(255,184,0,0.3)] transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-3.5 bg-gradient-to-r from-gold to-amber-500 text-[#06070F] font-bold rounded-xl shadow-lg hover:shadow-[0_0_20px_rgba(255,184,0,0.3)] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed w-full sm:w-auto min-w-[280px]"
             >
               {loading ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing Skills...</>
+              ) : selectedCount === 0 ? (
+                <>Select at least 1 skill to continue</>
               ) : (
                 <>Continue with {selectedCount} skill{selectedCount !== 1 ? 's' : ''} <ChevronRight className="w-4 h-4" /></>
               )}
@@ -481,9 +475,14 @@ const Onboarding = ({ userProfile, onComplete }) => {
             </button>
             <button
               onClick={handleStartJourney}
-              className="px-8 py-3.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] transition-all cursor-pointer flex items-center gap-2 text-base"
+              disabled={submitting}
+              className="px-8 py-3.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] transition-all cursor-pointer flex items-center gap-2 text-base disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Star className="w-5 h-5" /> Start My Journey
+              {submitting ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Launching Dashboard...</>
+              ) : (
+                <><Star className="w-5 h-5" /> Start My Journey</>
+              )}
             </button>
           </div>
         </div>

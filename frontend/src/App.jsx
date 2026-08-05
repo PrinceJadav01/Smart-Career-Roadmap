@@ -449,11 +449,18 @@ function App() {
 
         // Fetch active quest — also determines if onboarding is needed
         const questData = await api.getActiveQuest(userId);
+        const savedOnboardingFlag = localStorage.getItem(`onboarding_complete_${userId}`) === 'true';
+        const hasConfiguredSkills = skillsData && skillsData.some(s => s.level > 0);
+
         if (questData && questData.roleName) {
           setSelectedRole(questData.roleName);
           setOnboardingComplete(true);
+          localStorage.setItem(`onboarding_complete_${userId}`, 'true');
+        } else if (savedOnboardingFlag || hasConfiguredSkills) {
+          // User has already completed onboarding or has saved skills
+          setOnboardingComplete(true);
         } else {
-          // No active quest means user hasn't onboarded yet
+          // Only show onboarding for brand-new users with zero saved skills and no completed flag
           setOnboardingComplete(false);
         }
 
@@ -730,34 +737,43 @@ function App() {
       <Onboarding
         userProfile={userProfile}
         onComplete={async (roleName, selectedSkillsMap) => {
-          // Save selected skills to API
-          try {
-            const userId = api.getStoredUserId();
-            if (userId) {
-              // Update skill levels on server
-              for (const [skillName, level] of Object.entries(selectedSkillsMap)) {
-                const skill = userSkills.find(s => s.name === skillName);
-                if (skill?.id) {
-                  await api.updateSkillLevel(userId, skill.id, level);
-                }
-              }
-              // Set active quest
-              const role = careerRolesData.find(r => r.name === roleName);
-              if (role?.id) {
-                await api.setActiveQuest(userId, role.id);
-              }
-            }
-          } catch (err) {
-            console.error('Failed to save onboarding data:', err);
-          }
-          // Update local state
+          const userId = api.getStoredUserId();
+          
+          // Update local state & localStorage immediately for instant UI transition
           setSelectedRole(roleName);
           setUserSkills(prev => prev.map(s => {
             const newLevel = selectedSkillsMap[s.name];
             return newLevel !== undefined ? { ...s, level: newLevel } : s;
           }));
+          if (userId) {
+            localStorage.setItem(`onboarding_complete_${userId}`, 'true');
+          }
           setOnboardingComplete(true);
           setCurrentPage('dashboard');
+
+          // Sync to backend API
+          try {
+            if (userId) {
+              const apiSkills = await api.getUserSkills(userId);
+              if (apiSkills && apiSkills.length > 0) {
+                for (const [skillName, level] of Object.entries(selectedSkillsMap)) {
+                  const skill = apiSkills.find(s => s.name.toLowerCase() === skillName.toLowerCase());
+                  if (skill?.id) {
+                    await api.updateSkillLevel(userId, skill.id, level);
+                  }
+                }
+              }
+              const role = careerRolesData.find(r => 
+                r.name.toLowerCase().includes(roleName.toLowerCase()) || 
+                roleName.toLowerCase().includes(r.name.toLowerCase())
+              );
+              if (role?.id) {
+                await api.setActiveQuest(userId, role.id);
+              }
+            }
+          } catch (err) {
+            console.error('Failed to sync onboarding data to backend:', err);
+          }
         }}
       />
     );

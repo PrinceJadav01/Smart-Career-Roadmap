@@ -16,14 +16,15 @@ const Dashboard = ({ userProfile, selectedRole, userSkills, careerRoles, setPage
 
     roleInfo.requirements.forEach(req => {
       const userSkill = userSkills.find(s => s.name === req.skill);
-      const proficiency = userSkill ? userSkill.level : 0; // 0 to 5
+      const level = userSkill ? userSkill.level : 0;
+      const targetLevel = req.importance;
       
-      const weight = req.importance;
-      totalWeight += weight * 5;
-      earnedWeight += weight * proficiency;
+      totalWeight += targetLevel;
+      earnedWeight += Math.min(level, targetLevel);
     });
 
-    return totalWeight > 0 ? Math.round((earnedWeight / totalWeight) * 100) : 0;
+    const hasAnySkill = userSkills && userSkills.some(s => s.level > 0);
+    return (hasAnySkill && totalWeight > 0) ? Math.round((earnedWeight / totalWeight) * 100) : 0;
   };
 
   const score = calculateEmployability();
