@@ -1,7 +1,7 @@
 import React from 'react';
-import { Award, Lock, ShieldCheck, CheckCircle, Sparkles } from 'lucide-react';
+import { Award, Lock } from 'lucide-react';
 
-const Achievements = ({ userProfile, unlockedAchievements, allAchievements }) => {
+const Achievements = ({ unlockedAchievements, allAchievements }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Intro Panel */}

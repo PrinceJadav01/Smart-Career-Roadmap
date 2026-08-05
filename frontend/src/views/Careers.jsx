@@ -1,5 +1,4 @@
-import React from 'react';
-import { Target, TrendingUp, DollarSign, Award, Star, CheckCircle, Sparkles } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
 const Careers = ({ careerRoles, selectedRole, userSkills, selectTargetRole }) => {
   

@@ -112,7 +112,7 @@ public class AdminController : ControllerBase
         if (admin == null) return Forbid("Admin permissions required.");
 
         var users = await _db.Users
-            .Include(u => u.ActiveQuest).ThenInclude(aq => aq.CareerRole)
+            .Include(u => u.ActiveQuest!).ThenInclude(aq => aq.CareerRole)
             .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
             .OrderBy(u => u.Name)
             .ToListAsync();
